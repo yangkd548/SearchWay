@@ -18,60 +18,91 @@ var Dylan;
         function DfsSearch() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.oppoFirst = true;
+            _this._isOver = false;
             return _this;
         }
-        DfsSearch.prototype.DoSearch = function () {
+        Object.defineProperty(DfsSearch.prototype, "isOver", {
+            get: function () {
+                return this._isOver;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        DfsSearch.prototype.SearchCustomSteps = function () {
             switch (this.searchStep) {
                 case Dylan.E_SearchStep.OncePoint:
                     if (this.driveTimes % 1 == 0) {
-                        this.SearchOnePoint();
+                        this.DoSearchSteps();
                     }
+                    break;
+                default:
+                    this.DoSearchSteps();
                     break;
             }
         };
-        DfsSearch.prototype.DoSearchOnePoint = function () {
+        DfsSearch.prototype.SearchOneStep = function () {
             // console.log("-------");
-            if (this._cur == null) {
-                this._cur = this.start;
+            if (!this.isInit || this.isOver || this.isSucc)
+                return;
+            if (this._curPoint == null) {
+                this._curPoint = this.startPoint;
             }
             // console.log("---- 基准点：", this.cur.x, this.cur.y);
             var hasUnvisited = false;
             //查找周围顶点
-            var neighbors = this._mapGraph.GetNeighbors(this._cur, this.oppoFirst);
+            var neighbors = this.mapGraph.GetNeighbors(this._curPoint, this.oppoFirst);
             for (var _i = 0, neighbors_1 = neighbors; _i < neighbors_1.length; _i++) {
                 var next = neighbors_1[_i];
                 //没有访问过
                 if (next.isUnvisited) {
-                    this.PushQueue(next);
-                    if (this._end == next) {
-                        this._cur = this._end;
-                        this._isSucc = true;
-                    }
+                    this.ProcessAddChildPoint(next);
+                    this.CheckSucc(next);
                     hasUnvisited = true;
-                    this._cur.SetInQueue();
-                    this._cur = next;
                     break;
                 }
             }
             this.EmitReDraw();
-            if (this._isSucc) {
-                this.Clear();
-            }
-            else {
+            if (!this.isSucc) {
                 if (!hasUnvisited) {
                     //执行回溯（先回溯一步，不行再回溯一步...）
                     this.Recall();
                 }
             }
         };
+        DfsSearch.prototype.ProcessAddChildPoint = function (point) {
+            _super.prototype.ProcessAddChildPoint.call(this, point);
+            this._curPoint = point;
+        };
         DfsSearch.prototype.Recall = function () {
-            this._cur.SetIsVisited();
-            if (this._cur.parent == null) {
-                this._frontier.splice(0);
+            this._curPoint.SetIsVisited();
+            if (this._curPoint.parent == null) {
+                this._isOver = true;
             }
             else {
-                this._cur = this._cur.parent;
+                this._curPoint = this._curPoint.parent;
             }
+        };
+        DfsSearch.prototype.FallBackOneStep = function () {
+            // while (this._frontier.length > 0) {
+            //     let tailPoint = this._frontier[this._frontier.length - 1];
+            //     if (tailPoint.parent == this._curPoint) {
+            //         this.ProcessTailUnvisited(tailPoint);
+            //     }
+            //     else{
+            //         break;
+            //     }
+            // }
+            // this._frontier.unshift(this._curPoint);
+            // this._curPoint.SetIsProcess();
+            // this._curPoint = this._curPoint.parent;
+        };
+        DfsSearch.prototype.ProcessTailUnvisited = function (point) {
+            _super.prototype.ProcessAddChildPoint.call(this, point);
+            // this._frontier.pop();
+        };
+        DfsSearch.prototype.Reset = function () {
+            this._isOver = false;
+            _super.prototype.Reset.call(this);
         };
         return DfsSearch;
     }(Dylan.BaseSearch));

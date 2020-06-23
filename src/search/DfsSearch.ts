@@ -2,44 +2,45 @@ module Dylan {
     export class DfsSearch extends BaseSearch {
         private readonly oppoFirst: boolean = true;
 
-        public DoSearch(): void {
+        private _isOver:boolean = false;
+        public get isOver(): boolean {
+            return this._isOver;
+        }
+
+        public SearchCustomSteps(): void {
             switch (this.searchStep) {
                 case E_SearchStep.OncePoint:
                     if (this.driveTimes % 1 == 0) {
-                        this.SearchOnePoint();
+                        this.DoSearchSteps();
                     }
+                    break;
+                default:
+                    this.DoSearchSteps();
                     break;
             }
         }
 
-        protected DoSearchOnePoint(): void {
+        protected SearchOneStep(): void {
             // console.log("-------");
-            if (this._cur == null) {
-                this._cur = this.start;
+            if(!this.isInit || this.isOver || this.isSucc) return;
+            if (this._curPoint == null) {
+                this._curPoint = this.startPoint;
             }
             // console.log("---- 基准点：", this.cur.x, this.cur.y);
             let hasUnvisited = false;
             //查找周围顶点
-            let neighbors: MapPoint[] = this._mapGraph.GetNeighbors(this._cur, this.oppoFirst);
+            let neighbors: MapPoint[] = this.mapGraph.GetNeighbors(this._curPoint, this.oppoFirst);
             for (let next of neighbors) {
                 //没有访问过
                 if (next.isUnvisited) {
-                    this.PushQueue(next);
-                    if (this._end == next) {
-                        this._cur = this._end;
-                        this._isSucc = true;
-                    }
+                    this.ProcessAddChildPoint(next);
+                    this.CheckSucc(next);
                     hasUnvisited = true;
-                    this._cur.SetInQueue();
-                    this._cur = next;
                     break;
                 }
             }
             this.EmitReDraw();
-            if (this._isSucc) {
-                this.Clear();
-            }
-            else {
+            if (!this.isSucc) {
                 if (!hasUnvisited) {
                     //执行回溯（先回溯一步，不行再回溯一步...）
                     this.Recall();
@@ -47,14 +48,44 @@ module Dylan {
             }
         }
 
+        protected ProcessAddChildPoint(point: MapPoint): void {
+            super.ProcessAddChildPoint(point);
+            this._curPoint = point;
+        }
+
         private Recall(): void {
-            this._cur.SetIsVisited();
-            if(this._cur.parent == null){
-                this._frontier.splice(0);
+            this._curPoint.SetIsVisited();
+            if (this._curPoint.parent == null) {
+                this._isOver = true;
             }
-            else{
-                this._cur = this._cur.parent;
+            else {
+                this._curPoint = this._curPoint.parent;
             }
+        }
+
+        protected FallBackOneStep(): void {
+            // while (this._frontier.length > 0) {
+            //     let tailPoint = this._frontier[this._frontier.length - 1];
+            //     if (tailPoint.parent == this._curPoint) {
+            //         this.ProcessTailUnvisited(tailPoint);
+            //     }
+            //     else{
+            //         break;
+            //     }
+            // }
+            // this._frontier.unshift(this._curPoint);
+            // this._curPoint.SetIsProcess();
+            // this._curPoint = this._curPoint.parent;
+        }
+
+        protected ProcessTailUnvisited(point:MapPoint):void{
+            super.ProcessAddChildPoint(point);
+            // this._frontier.pop();
+        }
+
+        public Reset(): void {
+            this._isOver = false;
+            super.Reset();
         }
     }
 }

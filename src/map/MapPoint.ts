@@ -44,14 +44,17 @@ module Dylan {
             }
         }
 
-        public _inQueue: boolean = false;
-        public get inQueue(): boolean {
-            return this._inQueue;
+        public _isProcess: boolean = false;
+        public get isProcess(): boolean {
+            return this._isProcess;
         }
-        public SetInQueue(): void {
-            this._inQueue = true;
+        public SetIsProcess(): void {
+            this._isProcess = true;
             this._isVisited = false;
         }
+        // public CanelIsProcess():void{
+        //     this.SetIsUnvisited();
+        // }
 
         private _isVisited: boolean = false;
         public get isVisited(): boolean {
@@ -59,11 +62,18 @@ module Dylan {
         }
         public SetIsVisited(): void {
             this._isVisited = true;
-            this._inQueue = false;
+            this._isProcess = false;
         }
+        // public CanelIsVisited(): void {
+        //     this.SetIsProcess();
+        // }
 
+        public SetIsUnvisited():void{
+            this._isProcess = false;
+            this._isVisited = false;
+        }
         public get isUnvisited(): boolean {
-            return !this.isVisited && !this._inQueue;
+            return !this._isVisited && !this._isProcess;
         }
 
         public parent: MapPoint;
@@ -83,16 +93,16 @@ module Dylan {
         //     return this._cost;
         // }
 
-        public Clear(): void {
+        public Reset(): void {
+            this._weight = this.OriginWeight;
             this.SetValue(-1, -1, this.weight);
-            this._inQueue = false;
+            this._isProcess = false;
             this._isVisited = false;
             this.parent = null;
         }
 
-        public Reset(): void {
-            this._weight = this.OriginWeight;
-            this.Clear();
+        public IsSamePos(other:MapPoint):boolean{
+            return other && this.x == other.x && this.y == other.y;
         }
     }
 }

@@ -1,11 +1,24 @@
 module Dylan{
-    export class GbfsSearch extends BaseSearch{
-        public DoSearch(): void {
+    export class GbfsSearch extends BaseSearch {
+        public get isOver(): boolean{
+            return false;
+        }
+
+        public SearchCustomSteps(step:number = 1): void {
             
         }
 
-        protected DoSearchOnePoint(): void {
+        protected SearchOneStep(): void {
             
+        }
+
+        protected FallBackOneStep(): void {
+
+        }
+
+        public Reset():void{
+            
+            super.Reset();
         }
     }
 }

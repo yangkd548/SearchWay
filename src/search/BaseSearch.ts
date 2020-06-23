@@ -1,6 +1,7 @@
 module Dylan {
     export enum E_SearchStep {
-        OncePoint = 0,
+        None = 0,
+        OncePoint,
         OnceRound,
         OnceSide,
         OnceAll
@@ -10,29 +11,36 @@ module Dylan {
         public static readonly SearchFinish: string = "SearchFinish";
         public static readonly SearchReDraw: string = "SearchReDraw";
 
-        protected _mapGraph: MapGraph = new MapGraph();
+        private static readonly _mapGraph: MapGraph = new MapGraph();
         public get mapGraph(): MapGraph {
-            return this._mapGraph;
+            return BaseSearch._mapGraph;
         }
 
-        protected _frontier: MapPoint[] = [];
-        protected _start: MapPoint;
-        public get start(): MapPoint {
-            return this._start;
+        public get startPoint(): MapPoint {
+            return this.mapGraph.startPoint;
         }
-        protected _end: MapPoint;
-        public get end(): MapPoint {
-            return this._end;
+        public SetStart(fromX: number, fromY: number): void {
+            this.mapGraph.SetStartPoint(fromX, fromY);
+            this.EmitReDraw();
         }
-        protected _cur: MapPoint;
-        public get cur(): MapPoint {
-            return this._cur;
+
+        public get endPoint(): MapPoint {
+            return this.mapGraph.endPoint;
+        }
+        public SetEndPoint(toX: number, toY: number): void {
+            this.mapGraph.SetEndPoint(toX, toY);
+            this.EmitReDraw();
+        }
+
+        protected _curPoint: MapPoint;
+        public get curPoint(): MapPoint {
+            return this._curPoint;
         }
 
         protected fromStartDis: number = 0;
 
         //驱动执行的步数：0-逐点驱动，1-逐环驱动，2-逐边驱动
-        protected searchStep: E_SearchStep = E_SearchStep.OncePoint;
+        protected searchStep: E_SearchStep = E_SearchStep.None;
 
         //执行的次数，用于针对性给不同步数，做帧间隔设置（即设置执行速度）
         protected driveTimes: number = 0;
@@ -46,28 +54,21 @@ module Dylan {
             }
             else {
                 GEventMgr.Off(MapPoint.PointCostChanged, this, this.EmitReDraw);
+                this.Reset();
             }
         }
 
         public SetMap(width: number, height: number, reset: boolean = false): void {
-            this._mapGraph.SetMap(width, height, reset);
+            this.mapGraph.SetMap(width, height, reset);
             this.EmitReDraw();
         }
 
-        public ResetMap(): void {
-            this._mapGraph.ResetMap();
-            this.EmitReDraw();
-        }
-
-        public SetStart(fromX: number, fromY: number): void {
-            this._start = this._mapGraph.GetPoint(fromX, fromY);
-            this._start.ResetWeight();
-            this.EmitReDraw();
-        }
-
-        public SetEnd(toX: number, toY: number): void {
-            this._end = this._mapGraph.GetPoint(toX, toY);
-            this._end.ResetWeight();
+        public Reset(): void {
+            this._maxStep = 0;
+            this._isSucc = false;
+            this._curPoint = null;
+            this.driveTimes = 0;
+            this.mapGraph.Reset();
             this.EmitReDraw();
         }
 
@@ -76,46 +77,78 @@ module Dylan {
         }
 
         public Start(): boolean {
-            this.PushQueue(this._start);
-            return this.isInit;
-        }
-
-        public abstract DoSearch(): void;
-
-        protected SearchOnePoint(): void {
-            if (this._frontier.length > 0) {
-                this.DoSearchOnePoint();
+            if (!this.isRunning && this.isInit) {
+                this._isStarted = true;
+                return true;
             }
+            return false;
         }
 
-        protected abstract DoSearchOnePoint(): void;
+        public abstract SearchCustomSteps(): void;
 
-        public get isOver(): boolean {
-            return this._frontier.length == 0;
+        //TODO:考虑一下，如何组织这个方法
+        public AutoSearch(): void {
+            this.DoSearchSteps();
         }
 
-        protected _isSucc: boolean = false;
-        public get isSucc(): boolean {
-            return this._isSucc;
+        protected _step: number = 0;
+        protected set step(value: number) {
+            this._step = value;
+        }
+        protected _maxStep: number = 0;
+        public SearchSteps(step: number): void {
+            if (this._maxStep) {
+                console.log("原始：", step, " MAX:", this._maxStep);
+                step = Math.min(this._maxStep, step);
+                console.log("调整：", step);
+            }
+            this.DoSearchSteps(step - this._step);
+        }
+
+        protected DoSearchSteps(step: number = 1): void {
+            let count = Math.abs(step);
+            console.log(`000 ----${count}执行 +++：`, step, "  当前步骤：", this._step);
+            for (let i = 0; i < count; i++) {
+                if (step > 0) {
+                    this.Start();
+                    if (this.isOver) break;
+                    this.SearchOneStep();
+                    if (this.isOver) break;
+                }
+                else {
+                    if (!this._isStarted) break;
+                    this.FallBackOneStep();
+                    if (!this._isStarted) break;
+                }
+            }
+            console.log(`111 ----${count}执行 +++：`, step, "  当前步骤：", this._step);
+        }
+
+        protected abstract SearchOneStep(): void;
+        protected abstract FallBackOneStep(): void;
+
+        private _isStarted: boolean = false;
+        protected get isStarted(): boolean {
+            return this._isStarted;
+        }
+        public get isRunning(): boolean {
+            return this._isStarted && !this.isOver && !this.isSucc;
+        }
+
+        public abstract get isOver(): boolean;
+
+        private _isSucc: boolean = false;
+        protected get isSucc(): boolean {
+            return this._isSucc && this._step >= this._maxStep;
         }
 
         public get isInit(): boolean {
-            return this._start != null;
-        }
-
-        public Clear(): void {
-            // if (!this.isInit) return;
-            this._isSucc = false;
-            this.driveTimes = 0;
-            this._frontier.splice(0);
-            this._mapGraph.Clear();
-            this._start = null;
-            this._end = null;
-            this._cur = null;
+            return this.mapGraph.startPoint != null;
         }
 
         public IsWarPoint(point: MapPoint): boolean {
-            let warPoint = this.end;
+            if (!this.isSucc) return false;
+            let warPoint = this.endPoint;
             while (warPoint.parent) {
                 if (warPoint == point) {
                     return true;
@@ -127,18 +160,30 @@ module Dylan {
             return false;
         }
 
-        protected PushQueue(point: MapPoint): void {
-            if (!this.isInit) return;
-            // console.log("++++ 基准点：", point.x, point.y);
-            point.parent = this._cur;
-            point.SetInQueue();
-            this._frontier.push(point);
+        protected ProcessAddChildPoint(point: MapPoint): void {
+            point.parent = this._curPoint;
+            point.SetIsProcess();
+        }
+
+        protected CheckSucc(point: MapPoint): void {
+            this._isSucc = this.mapGraph.endPoint == point;
+        }
+
+        protected ProcessTailUnvisited(point: MapPoint): void {
+            //父子关系，还要利用，不能置空
+            // point.parent = null;
+            point.SetIsUnvisited();
+        }
+
+        protected CheckFallOrigin(point: MapPoint): boolean {
+            this._isStarted = !(this.mapGraph.startPoint == point);
+            return this._isStarted;
         }
 
         public SetPointWeight(x: number, y: number, weight: number) {
-            let point = this._mapGraph.GetPoint(x, y);
+            let point = this.mapGraph.GetPoint(x, y);
             if (point) {
-                if (point == this.start || point == this.end) return;
+                if (point == this.startPoint || point == this.endPoint) return;
                 point.SetWeight(weight);
             }
         }

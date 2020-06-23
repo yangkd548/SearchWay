@@ -11,9 +11,27 @@ module Dylan {
             return this._height;
         }
 
+        protected _startPoint: MapPoint;
+        public SetStartPoint(x:number, y:number):void {
+            this._startPoint = this.GetPoint(x, y);
+            this._startPoint.ResetWeight();
+        }
+        public get startPoint(): MapPoint {
+            return this._startPoint;
+        }
+
+        protected _endPoint: MapPoint;
+        public SetEndPoint(x:number, y:number):void {
+            this._endPoint = this.GetPoint(x, y);
+            this._endPoint.ResetWeight();
+        }
+        public get endPoint(): MapPoint {
+            return this._endPoint;
+        }
+
         private grids: MapPoint[][] = [];
 
-        public SetMap(width: number, height: number, reset:boolean = false): void {
+        public SetMap(width: number, height: number, reset: boolean = false): void {
             let needResetPoints = reset || this._width != width || this._height != height;
             this._width = width;
             this._height = height;
@@ -33,7 +51,7 @@ module Dylan {
             }
         }
 
-        public ResetMap():void{
+        public Reset(): void {
             this.SetMap(this.width, this.height, true);
         }
 
@@ -63,15 +81,6 @@ module Dylan {
         public GetPoint(x: number, y: number): MapPoint {
             if (x >= this.width || y >= this.height) return null;
             return this.grids[x] ? this.grids[x][y] : null;
-        }
-
-        public Clear(): void {
-            for (let x = 0; x < this.width; x++) {
-                this.grids.push([]);
-                for (let y = 0; y < this.height; y++) {
-                    this.grids[x][y].Clear();
-                }
-            }
         }
     }
 }

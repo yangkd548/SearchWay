@@ -124,14 +124,6 @@ module Dylan {
                 let dialog = this.ipageMap[name] as Dialog;
                 dialog.closeHandler = Laya.Handler.create(this, this.RemovePage, [name, null]);
                 dialog.popup();
-                // if (name != "TestPage") {
-                //     //新手引导期间不显示banner广告
-                //     if (GPlayerData.isFinishGuide || GPlayerData.mapLevel > 2) {
-                //         if (Config.isSpeBannerOpen || !(name == "NeedGoldPage" && args != null)) {
-                //             GPlatform.ShowBanner();
-                //         }
-                //     }
-                // }
             }
             let ipage: IPage = this.ipageMap[name] as IPage;
             if (ipage && ipage.OnAddStage) ipage.OnAddStage(args);

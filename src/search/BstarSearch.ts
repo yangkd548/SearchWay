@@ -1,11 +1,24 @@
 module Dylan{
     export class BstarSearch extends BaseSearch{
-        public DoSearch(): void {
+        public get isOver(): boolean {
+            return false;
+        }
+
+        public SearchCustomSteps(step:number = 1): void {
             
         }
 
-        protected DoSearchOnePoint(): void {
+        protected SearchOneStep(): void {
             
+        }
+
+        protected FallBackOneStep(): void {
+
+        }
+
+        public Reset():void{
+            
+            super.Reset();
         }
     }
 }

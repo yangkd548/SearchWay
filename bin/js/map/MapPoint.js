@@ -5,7 +5,10 @@ var Dylan;
             //权值（权重）
             this.OriginWeight = 1;
             this._weight = this.OriginWeight;
-            this._inQueue = false;
+            this._isProcess = false;
+            // public CanelIsProcess():void{
+            //     this.SetIsUnvisited();
+            // }
             this._isVisited = false;
         }
         Object.defineProperty(MapPoint.prototype, "x", {
@@ -51,15 +54,15 @@ var Dylan;
                     break;
             }
         };
-        Object.defineProperty(MapPoint.prototype, "inQueue", {
+        Object.defineProperty(MapPoint.prototype, "isProcess", {
             get: function () {
-                return this._inQueue;
+                return this._isProcess;
             },
             enumerable: true,
             configurable: true
         });
-        MapPoint.prototype.SetInQueue = function () {
-            this._inQueue = true;
+        MapPoint.prototype.SetIsProcess = function () {
+            this._isProcess = true;
             this._isVisited = false;
         };
         Object.defineProperty(MapPoint.prototype, "isVisited", {
@@ -71,11 +74,18 @@ var Dylan;
         });
         MapPoint.prototype.SetIsVisited = function () {
             this._isVisited = true;
-            this._inQueue = false;
+            this._isProcess = false;
+        };
+        // public CanelIsVisited(): void {
+        //     this.SetIsProcess();
+        // }
+        MapPoint.prototype.SetIsUnvisited = function () {
+            this._isProcess = false;
+            this._isVisited = false;
         };
         Object.defineProperty(MapPoint.prototype, "isUnvisited", {
             get: function () {
-                return !this.isVisited && !this._inQueue;
+                return !this._isVisited && !this._isProcess;
             },
             enumerable: true,
             configurable: true
@@ -97,15 +107,15 @@ var Dylan;
         // public get cost():number{
         //     return this._cost;
         // }
-        MapPoint.prototype.Clear = function () {
+        MapPoint.prototype.Reset = function () {
+            this._weight = this.OriginWeight;
             this.SetValue(-1, -1, this.weight);
-            this._inQueue = false;
+            this._isProcess = false;
             this._isVisited = false;
             this.parent = null;
         };
-        MapPoint.prototype.Reset = function () {
-            this._weight = this.OriginWeight;
-            this.Clear();
+        MapPoint.prototype.IsSamePos = function (other) {
+            return other && this.x == other.x && this.y == other.y;
         };
         MapPoint.PointCostChanged = "PointCostChanged";
         return MapPoint;

@@ -74,8 +74,10 @@ module Dylan {
 			this.resetBtn.on(Laya.Event.CLICK, this, this.OnResetMap);
 			this.startBtn.on(Laya.Event.CLICK, this, this.OnSwitchStart);
 			this.pauseBtn.on(Laya.Event.CLICK, this, this.OnSwitchPause);
+
 			GEventMgr.On(MapSearch.SearchStart, this, this.OnSearchStart);
 			GEventMgr.On(MapSearch.SearchStop, this, this.OnSearchStop);
+			GEventMgr.On(MapSearch.SearchReset, this, this.OnSearchReset);
 			GEventMgr.On(MapSearch.SearchPause, this, this.OnSearchPause);
 			GEventMgr.On(MapSearch.SearchResume, this, this.OnSearchResume);
 			GEventMgr.On(BaseSearch.SearchReDraw, this, this.ReDrawMap);
@@ -178,6 +180,7 @@ module Dylan {
 		}
 
 		private OnEnableEditWeight(): void {
+			if(GMapSearch.isRunning) return;
 			let vec2 = this.GetClickMapSpPoint();
 			if (vec2) {
 				let point = GMapSearch.GetPoint(vec2.x, vec2.y);
@@ -222,17 +225,19 @@ module Dylan {
 		}
 
 		private OnRestWeightData(): void {
-			GMapSearch.ResetMap();
+			GMapSearch.Reset();
 		}
 
 		private OnSliderChange(value): void {
-			GMapSearch.PlayBySlider(value);
+			GMapSearch.SearchSteps(value);
 		}
 
 		private InitDraw(): void {
 			this.OnSetMapRange();
 			this.OnSetMapStartPoint();
 			this.OnSetMapEndPoint();
+			GMapSearch.Reset();
+			this.OnSearchStop();
 			this.startBtn.disabled = false;
 		}
 
@@ -249,9 +254,6 @@ module Dylan {
 		}
 
 		private OnResetMap(): void {
-			if (GMapSearch.isRunning) {
-				GMapSearch.SwitchStart();
-			}
 			this.InitDraw();
 			GTipsMgr.Show("设置完成！", 1);
 		}
@@ -270,6 +272,7 @@ module Dylan {
 			this.pauseBtn.text.text = "暂停";
 			this.pauseBtn.disabled = false;
 			this.mapSp.mouseThrough = true;
+			this.OnDisableEditWeight();
 		}
 
 		private OnSearchStop(): void {
@@ -278,6 +281,10 @@ module Dylan {
 			this.pauseBtn.text.text = "暂停";
 			this.pauseBtn.disabled = true;
 			this.mapSp.mouseThrough = false;
+		}
+
+		private OnSearchReset():void{
+			this.InitDraw();
 		}
 
 		private OnSearchPause(): void {
@@ -296,19 +303,19 @@ module Dylan {
 					let curY = y * this.GridHeight;
 					let temp = search.mapGraph.GetPoint(x, y);
 					let curColor: string;
-					if (temp == search.start) {
+					if (temp == search.startPoint) {
 						curColor = this.GridColorStart;
 					}
-					else if (temp == search.end) {
+					else if (temp == search.endPoint) {
 						curColor = this.GridColorEnd;
 					}
-					else if (search.isSucc && search.IsWarPoint(temp)) {
+					else if (search.IsWarPoint(temp)) {
 						curColor = this.GridColorWay;
 					}
-					else if (temp == search.cur) {
+					else if (temp == search.curPoint) {
 						curColor = this.GridColorCur;
 					}
-					else if (temp.inQueue) {
+					else if (temp.isProcess) {
 						curColor = this.GridColorInQueue;
 					}
 					else if (temp.isVisited) {

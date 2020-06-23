@@ -18,6 +18,28 @@ var Dylan;
             enumerable: true,
             configurable: true
         });
+        MapGraph.prototype.SetStartPoint = function (x, y) {
+            this._startPoint = this.GetPoint(x, y);
+            this._startPoint.ResetWeight();
+        };
+        Object.defineProperty(MapGraph.prototype, "startPoint", {
+            get: function () {
+                return this._startPoint;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        MapGraph.prototype.SetEndPoint = function (x, y) {
+            this._endPoint = this.GetPoint(x, y);
+            this._endPoint.ResetWeight();
+        };
+        Object.defineProperty(MapGraph.prototype, "endPoint", {
+            get: function () {
+                return this._endPoint;
+            },
+            enumerable: true,
+            configurable: true
+        });
         MapGraph.prototype.SetMap = function (width, height, reset) {
             if (reset === void 0) { reset = false; }
             var needResetPoints = reset || this._width != width || this._height != height;
@@ -38,7 +60,7 @@ var Dylan;
                 }
             }
         };
-        MapGraph.prototype.ResetMap = function () {
+        MapGraph.prototype.Reset = function () {
             this.SetMap(this.width, this.height, true);
         };
         MapGraph.prototype.GetNeighbors = function (origin, oppoFirst) {
@@ -68,14 +90,6 @@ var Dylan;
             if (x >= this.width || y >= this.height)
                 return null;
             return this.grids[x] ? this.grids[x][y] : null;
-        };
-        MapGraph.prototype.Clear = function () {
-            for (var x = 0; x < this.width; x++) {
-                this.grids.push([]);
-                for (var y = 0; y < this.height; y++) {
-                    this.grids[x][y].Clear();
-                }
-            }
         };
         return MapGraph;
     }());

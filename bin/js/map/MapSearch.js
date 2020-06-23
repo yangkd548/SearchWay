@@ -25,9 +25,8 @@ var Dylan;
             //驱动方式：0-间隔帧自动驱动；1-鼠标点击驱动
             this._driveMode = E_DriveMode.Auto;
             this._isPause = false;
-            this._searchType = E_SearchType.DFS;
+            this._searchType = E_SearchType.BFS;
             this.curSearch = this.SetSearchType();
-            this._step = 0;
         }
         MapSearch.prototype.SetDriveMode = function (mode) {
             this._driveMode = mode;
@@ -57,6 +56,7 @@ var Dylan;
             if (type === void 0) { type = this.searchType; }
             if (this.curSearch) {
                 this.curSearch.enable = false;
+                Dylan.GEventMgr.Emit(MapSearch.SearchReset);
             }
             switch (type) {
                 case E_SearchType.DFS:
@@ -90,7 +90,7 @@ var Dylan;
         });
         Object.defineProperty(MapSearch.prototype, "isRunning", {
             get: function () {
-                return !this.curSearch.isOver;
+                return this.curSearch.isRunning;
             },
             enumerable: true,
             configurable: true
@@ -98,14 +98,15 @@ var Dylan;
         MapSearch.prototype.SetMap = function (width, height) {
             this.curSearch.SetMap(width, height);
         };
-        MapSearch.prototype.ResetMap = function () {
-            this.curSearch.ResetMap();
+        MapSearch.prototype.Reset = function () {
+            this.curSearch.Reset();
+            this.ClearDrive();
         };
         MapSearch.prototype.SetStartPoint = function (fromX, fromY) {
             this.curSearch.SetStart(fromX, fromY);
         };
         MapSearch.prototype.SetEndPoint = function (toX, toY) {
-            this.curSearch.SetEnd(toX, toY);
+            this.curSearch.SetEndPoint(toX, toY);
         };
         MapSearch.prototype.GetPoint = function (x, y) {
             return this.curSearch.mapGraph.GetPoint(x, y);
@@ -129,27 +130,35 @@ var Dylan;
             }
         };
         MapSearch.prototype.Start = function () {
-            if (this.curSearch.Start()) {
+            if (this.DoStart()) {
                 this.StartDrive();
-                Dylan.GEventMgr.Emit(MapSearch.SearchStart);
             }
         };
         MapSearch.prototype.Finish = function () {
             this.Pause();
-            while (!this.curSearch.isOver) {
-                this.curSearch.DoSearch();
+            while (this.isRunning) {
+                this.curSearch.SearchCustomSteps();
             }
-            this.Clear();
+            Dylan.GEventMgr.Emit(MapSearch.SearchStop);
         };
-        MapSearch.prototype.PlayBySlider = function (step) {
-            for (var i = this._step; i < step; i++) {
-                this.curSearch.DoSearch();
+        MapSearch.prototype.SearchSteps = function (step) {
+            this.curSearch.SearchSteps(step);
+        };
+        MapSearch.prototype.DoStart = function () {
+            if (this.curSearch.Start()) {
+                Dylan.GEventMgr.Emit(MapSearch.SearchStart);
+                return true;
             }
+            return false;
         };
         MapSearch.prototype.Pause = function () {
             if (this._isPause || !this.isRunning)
                 return;
             this._isPause = true;
+            this.ClearDrive();
+            Dylan.GEventMgr.Emit(MapSearch.SearchPause);
+        };
+        MapSearch.prototype.ClearDrive = function () {
             switch (this._driveMode) {
                 case E_DriveMode.Auto:
                     Laya.timer.clearAll(this);
@@ -158,7 +167,6 @@ var Dylan;
                     Laya.stage.offAll();
                     break;
             }
-            Dylan.GEventMgr.Emit(MapSearch.SearchPause);
         };
         MapSearch.prototype.Resume = function () {
             if (!this._isPause || !this.isRunning)
@@ -180,31 +188,27 @@ var Dylan;
         MapSearch.prototype.DriveSearch = function () {
             this.DoSearch();
             this.curSearch.AddDriveTimes();
-            if (this.curSearch.isOver) {
-                this.Clear();
+            if (!this.isRunning) {
                 Laya.timer.clear(this, this.DriveSearch);
+                Dylan.GEventMgr.Emit(MapSearch.SearchStop);
             }
         };
         MapSearch.prototype.ClickSearch = function () {
             this.DoSearch();
-            if (this.curSearch.isOver) {
-                this.Clear();
+            if (!this.isRunning) {
                 Laya.stage.off(Laya.Event.CLICK, this, this.ClickSearch);
+                Dylan.GEventMgr.Emit(MapSearch.SearchStop);
             }
         };
         MapSearch.prototype.DoSearch = function () {
-            this.curSearch.DoSearch();
+            this.curSearch.SearchCustomSteps();
         };
         MapSearch.prototype.SetPointWeight = function (x, y, weight) {
             this.curSearch.SetPointWeight(x, y, weight);
         };
-        MapSearch.prototype.Clear = function () {
-            // if (!this.curSearch.isInit) return;
-            this.curSearch.Clear();
-            Dylan.GEventMgr.Emit(MapSearch.SearchStop);
-        };
         MapSearch.SearchStart = "SearchStart";
         MapSearch.SearchStop = "SearchStop";
+        MapSearch.SearchReset = "SearchReset";
         MapSearch.SearchPause = "SearchPause";
         MapSearch.SearchResume = "SearchResume";
         return MapSearch;

@@ -75,6 +75,7 @@ var Dylan;
             _this.pauseBtn.on(Laya.Event.CLICK, _this, _this.OnSwitchPause);
             Dylan.GEventMgr.On(Dylan.MapSearch.SearchStart, _this, _this.OnSearchStart);
             Dylan.GEventMgr.On(Dylan.MapSearch.SearchStop, _this, _this.OnSearchStop);
+            Dylan.GEventMgr.On(Dylan.MapSearch.SearchReset, _this, _this.OnSearchReset);
             Dylan.GEventMgr.On(Dylan.MapSearch.SearchPause, _this, _this.OnSearchPause);
             Dylan.GEventMgr.On(Dylan.MapSearch.SearchResume, _this, _this.OnSearchResume);
             Dylan.GEventMgr.On(Dylan.BaseSearch.SearchReDraw, _this, _this.ReDrawMap);
@@ -164,6 +165,8 @@ var Dylan;
             }
         };
         SearchWayPage.prototype.OnEnableEditWeight = function () {
+            if (Dylan.GMapSearch.isRunning)
+                return;
             var vec2 = this.GetClickMapSpPoint();
             if (vec2) {
                 var point = Dylan.GMapSearch.GetPoint(vec2.x, vec2.y);
@@ -185,12 +188,8 @@ var Dylan;
                 if (!this.lastEditWeightPoint || this.lastEditWeightPoint.x != vec2.x || this.lastEditWeightPoint.y != vec2.y) {
                     this.lastEditWeightPoint.x = vec2.x;
                     this.lastEditWeightPoint.y = vec2.y;
-                    Dylan.log("\u8BBE\u7F6E, x:" + vec2.x + ", y:" + vec2.y + ", weight:" + this.curSetWeight);
                     Dylan.GMapSearch.SetPointWeight(vec2.x, vec2.y, this.curSetWeight);
                     return vec2;
-                }
-                else {
-                    Dylan.log("不符合妖气--------");
                 }
             }
             return null;
@@ -207,15 +206,17 @@ var Dylan;
             this.defaultWeightValue = index + 1;
         };
         SearchWayPage.prototype.OnRestWeightData = function () {
-            Dylan.GMapSearch.ResetMap();
+            Dylan.GMapSearch.Reset();
         };
         SearchWayPage.prototype.OnSliderChange = function (value) {
-            Dylan.GMapSearch.PlayBySlider(value);
+            Dylan.GMapSearch.SearchSteps(value);
         };
         SearchWayPage.prototype.InitDraw = function () {
             this.OnSetMapRange();
             this.OnSetMapStartPoint();
             this.OnSetMapEndPoint();
+            Dylan.GMapSearch.Reset();
+            this.OnSearchStop();
             this.startBtn.disabled = false;
         };
         SearchWayPage.prototype.OnSelectDriveCombo = function (cb) {
@@ -228,9 +229,6 @@ var Dylan;
             // GMapSearch.SetSearchType(cb.selectedIndex);
         };
         SearchWayPage.prototype.OnResetMap = function () {
-            if (Dylan.GMapSearch.isRunning) {
-                Dylan.GMapSearch.SwitchStart();
-            }
             this.InitDraw();
             Dylan.GTipsMgr.Show("设置完成！", 1);
         };
@@ -246,6 +244,7 @@ var Dylan;
             this.pauseBtn.text.text = "暂停";
             this.pauseBtn.disabled = false;
             this.mapSp.mouseThrough = true;
+            this.OnDisableEditWeight();
         };
         SearchWayPage.prototype.OnSearchStop = function () {
             this.startBtn.text.text = "开始";
@@ -253,6 +252,9 @@ var Dylan;
             this.pauseBtn.text.text = "暂停";
             this.pauseBtn.disabled = true;
             this.mapSp.mouseThrough = false;
+        };
+        SearchWayPage.prototype.OnSearchReset = function () {
+            this.InitDraw();
         };
         SearchWayPage.prototype.OnSearchPause = function () {
             this.pauseBtn.text.text = "恢复";
@@ -268,19 +270,19 @@ var Dylan;
                     var curY = y * this.GridHeight;
                     var temp = search.mapGraph.GetPoint(x, y);
                     var curColor = void 0;
-                    if (temp == search.start) {
+                    if (temp == search.startPoint) {
                         curColor = this.GridColorStart;
                     }
-                    else if (temp == search.end) {
+                    else if (temp == search.endPoint) {
                         curColor = this.GridColorEnd;
                     }
-                    else if (search.isSucc && search.IsWarPoint(temp)) {
+                    else if (search.IsWarPoint(temp)) {
                         curColor = this.GridColorWay;
                     }
-                    else if (temp == search.cur) {
+                    else if (temp == search.curPoint) {
                         curColor = this.GridColorCur;
                     }
-                    else if (temp.inQueue) {
+                    else if (temp.isProcess) {
                         curColor = this.GridColorInQueue;
                     }
                     else if (temp.isVisited) {

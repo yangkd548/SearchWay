@@ -18,9 +18,22 @@ var Dylan;
         function AstarSearch() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        AstarSearch.prototype.DoSearch = function () {
+        Object.defineProperty(AstarSearch.prototype, "isOver", {
+            get: function () {
+                return false;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        AstarSearch.prototype.SearchCustomSteps = function (step) {
+            if (step === void 0) { step = 1; }
         };
-        AstarSearch.prototype.DoSearchOnePoint = function () {
+        AstarSearch.prototype.SearchOneStep = function () {
+        };
+        AstarSearch.prototype.FallBackOneStep = function () {
+        };
+        AstarSearch.prototype.Reset = function () {
+            _super.prototype.Reset.call(this);
         };
         return AstarSearch;
     }(Dylan.BaseSearch));
