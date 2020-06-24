@@ -10,15 +10,14 @@ var Dylan;
     })(E_SearchStep = Dylan.E_SearchStep || (Dylan.E_SearchStep = {}));
     var BaseSearch = /** @class */ (function () {
         function BaseSearch() {
-            this.fromStartDis = 0;
+            this._isStarted = false;
+            this._isSucc = false;
+            this._step = 0;
+            this._maxStep = 0;
             //驱动执行的步数：0-逐点驱动，1-逐环驱动，2-逐边驱动
             this.searchStep = E_SearchStep.None;
             //执行的次数，用于针对性给不同步数，做帧间隔设置（即设置执行速度）
             this.driveTimes = 0;
-            this._step = 0;
-            this._maxStep = 0;
-            this._isStarted = false;
-            this._isSucc = false;
         }
         Object.defineProperty(BaseSearch.prototype, "mapGraph", {
             get: function () {
@@ -49,6 +48,9 @@ var Dylan;
             this.mapGraph.SetEndPoint(toX, toY);
             this.EmitReDraw();
         };
+        BaseSearch.prototype.SearchSetCurPoint = function (value) {
+            this._curPoint = value;
+        };
         Object.defineProperty(BaseSearch.prototype, "curPoint", {
             get: function () {
                 return this._curPoint;
@@ -56,6 +58,60 @@ var Dylan;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(BaseSearch.prototype, "isStarted", {
+            get: function () {
+                return this._isStarted;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BaseSearch.prototype, "isRunning", {
+            get: function () {
+                return this._isStarted && !this.isOver && !this.isSucc;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BaseSearch.prototype, "isSucc", {
+            get: function () {
+                return this._isSucc;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BaseSearch.prototype, "isInit", {
+            get: function () {
+                return this.mapGraph.startPoint != null;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BaseSearch.prototype, "step", {
+            get: function () {
+                return this._step;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        BaseSearch.prototype.AddStep = function () {
+            if (this.isSucc)
+                return;
+            this._step++;
+        };
+        BaseSearch.prototype.SubStep = function () {
+            this._step--;
+        };
+        BaseSearch.prototype.SearchSteps = function (step) {
+            if (this._maxStep) {
+                step = Math.min(this._maxStep, step);
+            }
+            if (step >= this._step) {
+                this.DoSearchSteps(step - this._step);
+            }
+            else {
+                this.DoSearchToStep(step);
+            }
+        };
         BaseSearch.prototype.AddDriveTimes = function () {
             this.driveTimes++;
         };
@@ -77,14 +133,6 @@ var Dylan;
             this.mapGraph.SetMap(width, height, reset);
             this.EmitReDraw();
         };
-        BaseSearch.prototype.Reset = function () {
-            this._maxStep = 0;
-            this._isSucc = false;
-            this._curPoint = null;
-            this.driveTimes = 0;
-            this.mapGraph.Reset();
-            this.EmitReDraw();
-        };
         BaseSearch.prototype.EmitReDraw = function () {
             Dylan.GEventMgr.Emit(BaseSearch.SearchReDraw, this);
         };
@@ -99,75 +147,27 @@ var Dylan;
         BaseSearch.prototype.AutoSearch = function () {
             this.DoSearchSteps();
         };
-        Object.defineProperty(BaseSearch.prototype, "step", {
-            set: function (value) {
-                this._step = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        BaseSearch.prototype.SearchSteps = function (step) {
-            if (this._maxStep) {
-                console.log("原始：", step, " MAX:", this._maxStep);
-                step = Math.min(this._maxStep, step);
-                console.log("调整：", step);
-            }
-            this.DoSearchSteps(step - this._step);
-        };
         BaseSearch.prototype.DoSearchSteps = function (step) {
             if (step === void 0) { step = 1; }
-            var count = Math.abs(step);
-            console.log("000 ----" + count + "\u6267\u884C +++\uFF1A", step, "  当前步骤：", this._step);
-            for (var i = 0; i < count; i++) {
-                if (step > 0) {
-                    this.Start();
-                    if (this.isOver)
-                        break;
-                    this.SearchOneStep();
-                    if (this.isOver)
-                        break;
-                }
-                else {
-                    // console.log("this._isStarted: ", this._isStarted);
-                    if (!this._isStarted)
-                        break;
-                    this.FallBackOneStep();
-                    console.log("回退---------");
-                    if (!this._isStarted)
-                        break;
-                }
+            for (var i = 0; i < step; i++) {
+                if (this.SearchOneStep())
+                    break;
             }
-            console.log("111 ----" + count + "\u6267\u884C +++\uFF1A", step, "  当前步骤：", this._step);
         };
-        Object.defineProperty(BaseSearch.prototype, "isStarted", {
-            get: function () {
-                return this._isStarted;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BaseSearch.prototype, "isRunning", {
-            get: function () {
-                return this._isStarted && !this.isOver && !this.isSucc;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BaseSearch.prototype, "isSucc", {
-            get: function () {
-                return this._isSucc && this._step >= this._maxStep;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(BaseSearch.prototype, "isInit", {
-            get: function () {
-                return this.mapGraph.startPoint != null;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        BaseSearch.prototype.IsWarPoint = function (point) {
+        BaseSearch.prototype.DoSearchToStep = function (step) {
+            this.Reset();
+            this.DoSearchSteps(step);
+        };
+        BaseSearch.prototype.SearchOneStep = function () {
+            this.Start();
+            if (this.isOver)
+                return true;
+            this.DoSearchOneStep();
+            if (this.isOver)
+                return true;
+            return false;
+        };
+        BaseSearch.prototype.IsWayPoint = function (point) {
             if (!this.isSucc)
                 return false;
             var warPoint = this.endPoint;
@@ -181,21 +181,14 @@ var Dylan;
             }
             return false;
         };
-        BaseSearch.prototype.ProcessAddChildPoint = function (point) {
+        BaseSearch.prototype.AddProcessPoint = function (point) {
             point.parent = this._curPoint;
             point.SetIsProcess();
         };
         BaseSearch.prototype.CheckSucc = function (point) {
+            if (this._isSucc)
+                return;
             this._isSucc = this.mapGraph.endPoint == point;
-        };
-        BaseSearch.prototype.ProcessTailUnvisited = function (point) {
-            //父子关系，还要利用，不能置空
-            // point.parent = null;
-            point.SetIsUnvisited();
-        };
-        BaseSearch.prototype.CheckFallOrigin = function (point) {
-            this._isStarted = !(this.mapGraph.startPoint == point);
-            return this._isStarted;
         };
         BaseSearch.prototype.SetPointWeight = function (x, y, weight) {
             var point = this.mapGraph.GetPoint(x, y);
@@ -204,6 +197,15 @@ var Dylan;
                     return;
                 point.SetWeight(weight);
             }
+        };
+        BaseSearch.prototype.Reset = function () {
+            this._step = 0;
+            this._maxStep = 0;
+            this._isSucc = false;
+            this._curPoint = null;
+            this.driveTimes = 0;
+            this.mapGraph.Reset();
+            this.EmitReDraw();
         };
         BaseSearch.SearchFinish = "SearchFinish";
         BaseSearch.SearchReDraw = "SearchReDraw";

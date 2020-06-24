@@ -8,12 +8,8 @@ module Dylan{
             
         }
 
-        protected SearchOneStep(): void {
+        protected DoSearchOneStep(): void {
             
-        }
-
-        protected FallBackOneStep(): void {
-
         }
 
         public Reset():void{

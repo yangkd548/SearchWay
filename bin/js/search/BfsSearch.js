@@ -19,7 +19,7 @@ var Dylan;
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.oppoFirst = false;
             _this._frontier = [];
-            _this._visiteOrder = [];
+            _this.fromStartDis = 0;
             return _this;
         }
         Object.defineProperty(BfsSearch.prototype, "isOver", {
@@ -29,15 +29,9 @@ var Dylan;
             enumerable: true,
             configurable: true
         });
-        BfsSearch.prototype.CheckSucc = function (point) {
-            _super.prototype.CheckSucc.call(this, point);
-            if (this.isSucc && !this._maxStep) {
-                this._maxStep = this._visiteOrder.length;
-            }
-        };
         BfsSearch.prototype.Start = function () {
             if (_super.prototype.Start.call(this)) {
-                this.ProcessAddChildPoint(this.startPoint);
+                this.AddProcessPoint(this.startPoint);
                 return true;
             }
             return false;
@@ -72,7 +66,7 @@ var Dylan;
                 if (Math.abs(next.x - this.mapGraph.startPoint.x) + Math.abs(next.y - this.mapGraph.startPoint.y) > this.fromStartDis) {
                     break;
                 }
-                this.SearchOneStep();
+                this.DoSearchOneStep();
             }
             if (this.isOver) {
                 Laya.timer.clear(this, this.SearchOneRound);
@@ -93,29 +87,26 @@ var Dylan;
                     else if (flag != newFlag) {
                         break;
                     }
-                    this.SearchOneStep();
+                    this.DoSearchOneStep();
                 }
             }
             if (this.isOver) {
                 Laya.timer.clear(this, this.SearchOneSide);
             }
         };
-        BfsSearch.prototype.SearchOneStep = function () {
+        BfsSearch.prototype.DoSearchOneStep = function () {
             if (!this.isInit || this.isOver || this.isSucc)
                 return;
             // console.log("-------");
-            this._curPoint = this._frontier.shift();
-            this._curPoint.SetIsVisited();
-            this._visiteOrder.push(this._curPoint);
-            this.step = this._visiteOrder.length;
-            // console.log("---- 基准点：", this._curPoint.x, this._curPoint.y);
-            var neighbors = this.mapGraph.GetNeighbors(this._curPoint, this.oppoFirst);
-            //查找周围顶点
+            this.AddStep();
+            this.SearchSetCurPoint(this._frontier.shift());
+            this.curPoint.SetIsVisited();
+            // console.log("---- 基准点：", this.curPoint.x, this.curPoint.y);
+            var neighbors = this.mapGraph.GetNeighbors(this.curPoint, this.oppoFirst);
             for (var _i = 0, neighbors_1 = neighbors; _i < neighbors_1.length; _i++) {
                 var next = neighbors_1[_i];
-                //没有访问过
                 if (next.isUnvisited) {
-                    this.ProcessAddChildPoint(next);
+                    this.AddProcessPoint(next);
                     this.CheckSucc(next);
                     if (this.isSucc) {
                         break;
@@ -124,55 +115,12 @@ var Dylan;
             }
             this.EmitReDraw();
         };
-        BfsSearch.prototype.ProcessAddChildPoint = function (point) {
-            _super.prototype.ProcessAddChildPoint.call(this, point);
-            // if(this._frontier.indexOf(point)!=-1){
-            //     console.log("----添加了相同点！！！----:",point.x, point.y,"   变色",false);
-            // }
+        BfsSearch.prototype.AddProcessPoint = function (point) {
+            _super.prototype.AddProcessPoint.call(this, point);
             this._frontier.push(point);
-            // if (this.curPoint) console.log(this._processOrder.length, "  ++++ 基准点：", point.x, point.y, " ------ 父节点：  ", this.curPoint.x, this.curPoint.y, "   长度：", this._frontier.length);
-            // else console.log("++++ 基准点：", point.x, point.y, " ------ 无 父节点！！！！！");
-        };
-        BfsSearch.prototype.FallBackOneStep = function () {
-            if (this.step == 0)
-                return;
-            var orderPoint = this._visiteOrder.pop();
-            this.step = this._visiteOrder.length;
-            var tail = this._frontier[this._frontier.length - 1];
-            if (tail.parent != orderPoint) {
-                this._curPoint = orderPoint;
-            }
-            else {
-                var last = void 0;
-                while (this._frontier.length > 0) {
-                    var tail_1 = this._frontier[this._frontier.length - 1];
-                    if (!last || tail_1.parent == last.parent) {
-                        this._curPoint = tail_1.parent;
-                        this.ProcessTailUnvisited(tail_1);
-                        this.CheckFallOrigin(last);
-                        if (!this.isStarted) {
-                            break;
-                        }
-                        last = tail_1;
-                    }
-                    else {
-                        break;
-                    }
-                }
-            }
-            if (this.isStarted) {
-                this._curPoint.SetIsProcess();
-                this._frontier.unshift(this._curPoint);
-            }
-            this.EmitReDraw();
-        };
-        BfsSearch.prototype.ProcessTailUnvisited = function (point) {
-            _super.prototype.ProcessTailUnvisited.call(this, point);
-            this._frontier.pop();
         };
         BfsSearch.prototype.Reset = function () {
             this._frontier.splice(0);
-            this._visiteOrder.splice(0);
             _super.prototype.Reset.call(this);
         };
         return BfsSearch;

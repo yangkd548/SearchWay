@@ -32,12 +32,57 @@ module Dylan {
             this.EmitReDraw();
         }
 
-        protected _curPoint: MapPoint;
+        private _curPoint: MapPoint;
+        protected SearchSetCurPoint(value: MapPoint): void {
+            this._curPoint = value;
+        }
         public get curPoint(): MapPoint {
             return this._curPoint;
         }
 
-        protected fromStartDis: number = 0;
+        private _isStarted: boolean = false;
+        protected get isStarted(): boolean {
+            return this._isStarted;
+        }
+        public get isRunning(): boolean {
+            return this._isStarted && !this.isOver && !this.isSucc;
+        }
+
+        public abstract get isOver(): boolean;
+
+        protected _isSucc: boolean = false;
+        protected get isSucc(): boolean {
+            return this._isSucc;
+        }
+
+        public get isInit(): boolean {
+            return this.mapGraph.startPoint != null;
+        }
+
+        private _step: number = 0;
+        protected get step(): number {
+            return this._step;
+        }
+        protected AddStep(): void {
+            if(this.isSucc) return;
+            this._step++;
+        }
+        protected SubStep(): void {
+            this._step--;
+        }
+
+        protected _maxStep: number = 0;
+        public SearchSteps(step: number): void {
+            if (this._maxStep) {
+                step = Math.min(this._maxStep, step);
+            }
+            if (step >= this._step) {
+                this.DoSearchSteps(step - this._step);
+            }
+            else {
+                this.DoSearchToStep(step);
+            }
+        }
 
         //驱动执行的步数：0-逐点驱动，1-逐环驱动，2-逐边驱动
         protected searchStep: E_SearchStep = E_SearchStep.None;
@@ -63,15 +108,6 @@ module Dylan {
             this.EmitReDraw();
         }
 
-        public Reset(): void {
-            this._maxStep = 0;
-            this._isSucc = false;
-            this._curPoint = null;
-            this.driveTimes = 0;
-            this.mapGraph.Reset();
-            this.EmitReDraw();
-        }
-
         protected EmitReDraw(): void {
             GEventMgr.Emit(BaseSearch.SearchReDraw, this);
         }
@@ -91,62 +127,28 @@ module Dylan {
             this.DoSearchSteps();
         }
 
-        protected _step: number = 0;
-        protected set step(value: number) {
-            this._step = value;
-        }
-        protected _maxStep: number = 0;
-        public SearchSteps(step: number): void {
-            if (this._maxStep) {
-                console.log("原始：", step, " MAX:", this._maxStep);
-                step = Math.min(this._maxStep, step);
-                console.log("调整：", step);
-            }
-            this.DoSearchSteps(step - this._step);
-        }
-
         protected DoSearchSteps(step: number = 1): void {
-            let count = Math.abs(step);
-            console.log(`000 ----${count}执行 +++：`, step, "  当前步骤：", this._step);
-            for (let i = 0; i < count; i++) {
-                if (step > 0) {
-                    this.Start();
-                    if (this.isOver) break;
-                    this.SearchOneStep();
-                    if (this.isOver) break;
-                }
-                else {
-                    if (!this._isStarted) break;
-                    this.FallBackOneStep();
-                    if (!this._isStarted) break;
-                }
+            for (let i = 0; i < step; i++) {
+                if (this.SearchOneStep()) break;
             }
-            console.log(`111 ----${count}执行 +++：`, step, "  当前步骤：", this._step);
         }
 
-        protected abstract SearchOneStep(): void;
-        protected abstract FallBackOneStep(): void;
-
-        private _isStarted: boolean = false;
-        protected get isStarted(): boolean {
-            return this._isStarted;
-        }
-        public get isRunning(): boolean {
-            return this._isStarted && !this.isOver && !this.isSucc;
+        protected DoSearchToStep(step: number): void {
+            this.Reset();
+            this.DoSearchSteps(step);
         }
 
-        public abstract get isOver(): boolean;
-
-        private _isSucc: boolean = false;
-        protected get isSucc(): boolean {
-            return this._isSucc && this._step >= this._maxStep;
+        protected SearchOneStep(): boolean {
+            this.Start();
+            if (this.isOver) return true;
+            this.DoSearchOneStep();
+            if (this.isOver) return true;
+            return false;
         }
 
-        public get isInit(): boolean {
-            return this.mapGraph.startPoint != null;
-        }
+        protected abstract DoSearchOneStep(): void;
 
-        public IsWarPoint(point: MapPoint): boolean {
+        public IsWayPoint(point: MapPoint): boolean {
             if (!this.isSucc) return false;
             let warPoint = this.endPoint;
             while (warPoint.parent) {
@@ -160,24 +162,14 @@ module Dylan {
             return false;
         }
 
-        protected ProcessAddChildPoint(point: MapPoint): void {
+        protected AddProcessPoint(point: MapPoint): void {
             point.parent = this._curPoint;
             point.SetIsProcess();
         }
 
         protected CheckSucc(point: MapPoint): void {
+            if(this._isSucc) return;
             this._isSucc = this.mapGraph.endPoint == point;
-        }
-
-        protected ProcessTailUnvisited(point: MapPoint): void {
-            //父子关系，还要利用，不能置空
-            // point.parent = null;
-            point.SetIsUnvisited();
-        }
-
-        protected CheckFallOrigin(point: MapPoint): boolean {
-            this._isStarted = !(this.mapGraph.startPoint == point);
-            return this._isStarted;
         }
 
         public SetPointWeight(x: number, y: number, weight: number) {
@@ -186,6 +178,16 @@ module Dylan {
                 if (point == this.startPoint || point == this.endPoint) return;
                 point.SetWeight(weight);
             }
+        }
+
+        public Reset(): void {
+            this._step = 0;
+            this._maxStep = 0;
+            this._isSucc = false;
+            this._curPoint = null;
+            this.driveTimes = 0;
+            this.mapGraph.Reset();
+            this.EmitReDraw();
         }
     }
 }

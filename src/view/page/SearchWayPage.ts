@@ -67,6 +67,7 @@ module Dylan {
 			this.resetWeightBtn.on(Laya.Event.CLICK, this, this.OnRestWeightData);
 
 			this.slider.changeHandler = new Laya.Handler(this, this.OnSliderChange);
+			this.scroll.changeHandler = new Laya.Handler(this, this.OnSliderChange);
 
 			this.driveCombo.selectHandler = new Handler(this, this.OnSelectDriveCombo, [this.driveCombo]);
 			this.searchCombo.selectHandler = new Handler(this, this.OnSelectSearchCombo, [this.searchCombo]);
@@ -130,11 +131,20 @@ module Dylan {
 				let parent = this.mapSp.parent as Laya.Box;
 				this.mapSp.x = (parent.width - this.mapSp.width) / 2;
 				this.mapSp.y = (parent.height - this.mapSp.height) / 2 - 30;
+
+				let max = nMapWidth * nMapHeight;
 				this.slider.y = this.mapSp.y + this.mapSp.height + 30;
 				this.slider.width = Math.min(360, Math.max(200, this.mapSp.width - 40));
-				this.slider.max = nMapWidth * nMapHeight;
-				this.slider.value = this.slider.min = 0;
+				// this.slider.max = nMapWidth * nMapHeight;
+				// this.slider.value = this.slider.min = 0;
+				this.slider.setSlider(0, nMapWidth * nMapHeight, 0);
 				this.slider.tick = 1;
+
+				this.scroll.x = this.slider.x;
+				this.scroll.y = this.slider.y + 40;
+				this.scroll.width = this.slider.width;
+				this.scroll.setScroll(0, max, 0);
+				this.scroll.tick = 1;
 			}
 		}
 
@@ -180,7 +190,7 @@ module Dylan {
 		}
 
 		private OnEnableEditWeight(): void {
-			if(GMapSearch.isRunning) return;
+			if (GMapSearch.isRunning) return;
 			let vec2 = this.GetClickMapSpPoint();
 			if (vec2) {
 				let point = GMapSearch.GetPoint(vec2.x, vec2.y);
@@ -283,7 +293,7 @@ module Dylan {
 			this.mapSp.mouseThrough = false;
 		}
 
-		private OnSearchReset():void{
+		private OnSearchReset(): void {
 			this.InitDraw();
 		}
 
@@ -309,7 +319,7 @@ module Dylan {
 					else if (temp == search.endPoint) {
 						curColor = this.GridColorEnd;
 					}
-					else if (search.IsWarPoint(temp)) {
+					else if (search.IsWayPoint(temp)) {
 						curColor = this.GridColorWay;
 					}
 					else if (temp == search.curPoint) {

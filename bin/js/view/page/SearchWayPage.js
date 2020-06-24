@@ -67,6 +67,7 @@ var Dylan;
             _this.costRadioGroup.selectHandler = new Laya.Handler(_this, _this.OnSelectCostRadioGroup);
             _this.resetWeightBtn.on(Laya.Event.CLICK, _this, _this.OnRestWeightData);
             _this.slider.changeHandler = new Laya.Handler(_this, _this.OnSliderChange);
+            _this.scroll.changeHandler = new Laya.Handler(_this, _this.OnSliderChange);
             _this.driveCombo.selectHandler = new Handler(_this, _this.OnSelectDriveCombo, [_this.driveCombo]);
             _this.searchCombo.selectHandler = new Handler(_this, _this.OnSelectSearchCombo, [_this.searchCombo]);
             _this.stepCombo.selectHandler = new Handler(_this, _this.OnSelectStepCombo, [_this.stepCombo]);
@@ -121,11 +122,18 @@ var Dylan;
                 var parent_1 = this.mapSp.parent;
                 this.mapSp.x = (parent_1.width - this.mapSp.width) / 2;
                 this.mapSp.y = (parent_1.height - this.mapSp.height) / 2 - 30;
+                var max = nMapWidth * nMapHeight;
                 this.slider.y = this.mapSp.y + this.mapSp.height + 30;
                 this.slider.width = Math.min(360, Math.max(200, this.mapSp.width - 40));
-                this.slider.max = nMapWidth * nMapHeight;
-                this.slider.value = this.slider.min = 0;
+                // this.slider.max = nMapWidth * nMapHeight;
+                // this.slider.value = this.slider.min = 0;
+                this.slider.setSlider(0, nMapWidth * nMapHeight, 0);
                 this.slider.tick = 1;
+                this.scroll.x = this.slider.x;
+                this.scroll.y = this.slider.y + 40;
+                this.scroll.width = this.slider.width;
+                this.scroll.setScroll(0, max, 0);
+                this.scroll.tick = 1;
             }
         };
         SearchWayPage.prototype.OnSetMapStartPoint = function () {
@@ -276,7 +284,7 @@ var Dylan;
                     else if (temp == search.endPoint) {
                         curColor = this.GridColorEnd;
                     }
-                    else if (search.IsWarPoint(temp)) {
+                    else if (search.IsWayPoint(temp)) {
                         curColor = this.GridColorWay;
                     }
                     else if (temp == search.curPoint) {

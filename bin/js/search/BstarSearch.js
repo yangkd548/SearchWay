@@ -28,9 +28,7 @@ var Dylan;
         BstarSearch.prototype.SearchCustomSteps = function (step) {
             if (step === void 0) { step = 1; }
         };
-        BstarSearch.prototype.SearchOneStep = function () {
-        };
-        BstarSearch.prototype.FallBackOneStep = function () {
+        BstarSearch.prototype.DoSearchOneStep = function () {
         };
         BstarSearch.prototype.Reset = function () {
             _super.prototype.Reset.call(this);

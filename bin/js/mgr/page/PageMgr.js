@@ -70,14 +70,11 @@ var Dylan;
                     parent = this._pageRoot;
                 var view = parent.getChildByName(name);
                 if (view) {
-                    // log(`移除页面 111 ------- ：${name} in [${parent.name}]`);
                     this.RemoveThisPage(view);
                 }
                 //避免移除，不应该移除的特殊容器的页面
                 else if (this.ipageMap[name] instanceof Dialog) {
                     this.RemoveThisPage(this.ipageMap[name]);
-                    // log(`移除页面 222 ------- ：${name} in [${parent.name}]`);
-                    // GPlatform.HideBanner();
                 }
             }
         };

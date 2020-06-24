@@ -44,7 +44,7 @@ module Dylan {
             return this._isPause;
         }
 
-        private _searchType: E_SearchType = E_SearchType.BFS;
+        private _searchType: E_SearchType = E_SearchType.DFS;
         public get searchType(): E_SearchType {
             return this._searchType;
         }

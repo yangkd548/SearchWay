@@ -1,8 +1,8 @@
 {
     "x":0,
     "type":"View",
-    "selectedBox":1,
-    "selecteID":53,
+    "selectedBox":125,
+    "selecteID":126,
     "props":{"width":600,"sceneColor":"#ffffff","height":400},
     "nodeParent":-1,
     "label":"View",
@@ -62,6 +62,19 @@
                     "isAniNode":true,
                     "hasChild":false,
                     "compId":124,
+                    "child":[
+                        ]
+                },
+                {
+                    "x":30,
+                    "type":"HScrollBar",
+                    "props":{"y":416,"x":72,"width":363,"var":"scroll","touchScrollEnable":false,"skin":"comp/hscroll.png","scaleBar":false,"height":17},
+                    "nodeParent":125,
+                    "label":"HScrollBar(scroll)",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":126,
                     "child":[
                         ]
                 }]

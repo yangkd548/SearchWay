@@ -28,9 +28,7 @@ var Dylan;
         GbfsSearch.prototype.SearchCustomSteps = function (step) {
             if (step === void 0) { step = 1; }
         };
-        GbfsSearch.prototype.SearchOneStep = function () {
-        };
-        GbfsSearch.prototype.FallBackOneStep = function () {
+        GbfsSearch.prototype.DoSearchOneStep = function () {
         };
         GbfsSearch.prototype.Reset = function () {
             _super.prototype.Reset.call(this);

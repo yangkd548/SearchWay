@@ -25,7 +25,7 @@ var Dylan;
             //驱动方式：0-间隔帧自动驱动；1-鼠标点击驱动
             this._driveMode = E_DriveMode.Auto;
             this._isPause = false;
-            this._searchType = E_SearchType.BFS;
+            this._searchType = E_SearchType.DFS;
             this.curSearch = this.SetSearchType();
         }
         MapSearch.prototype.SetDriveMode = function (mode) {
