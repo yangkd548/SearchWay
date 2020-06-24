@@ -46,7 +46,7 @@ module Dylan {
                     else if (needResetPoints) {
                         this.grids[x][y].Reset();
                     }
-                    this.grids[x][y].SetValue(x, y);
+                    this.grids[x][y].SetValue(this, x, y);
                 }
             }
         }

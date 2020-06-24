@@ -1,16 +1,16 @@
 module Dylan {
     export class BfsSearch extends BaseSearch {
-        private readonly oppoFirst: boolean = false;
-        private _frontier: MapPoint[] = [];
+        protected readonly oppoFirst: boolean = false;
+        protected frontier: MapPoint[] = [];
         private fromStartDis: number = 0;
 
         public get isOver(): boolean {
-            return this._frontier.length == 0;
+            return this.frontier.length == 0;
         }
 
         public Start(): boolean {
             if (super.Start()) {
-                this.AddProcessPoint(this.startPoint);
+                this.AddFrontierPoint(this.startPoint);
                 return true;
             }
             return false;
@@ -42,8 +42,8 @@ module Dylan {
         private SearchOneRound(): void {
             this.fromStartDis++;
             console.log("---------------", this.fromStartDis);
-            while (this._frontier.length > 0) {
-                let next = this._frontier[0];
+            while (this.frontier.length > 0) {
+                let next = this.frontier[0];
                 if (Math.abs(next.x - this.mapGraph.startPoint.x) + Math.abs(next.y - this.mapGraph.startPoint.y) > this.fromStartDis) {
                     break;
                 }
@@ -58,10 +58,10 @@ module Dylan {
         private SearchOneSide(): void {
             this.fromStartDis++;
             console.log("---------------", this.fromStartDis);
-            if (this._frontier.length > 0) {
+            if (this.frontier.length > 0) {
                 let flag = null;
-                while (this._frontier.length > 0) {
-                    let next = this._frontier[0];
+                while (this.frontier.length > 0) {
+                    let next = this.frontier[0];
                     let newFlag = (next.x - this.mapGraph.startPoint.x) / (next.y - this.mapGraph.startPoint.y + 0.001) > 0;
                     if (flag == null) {
                         flag = newFlag;
@@ -81,14 +81,13 @@ module Dylan {
             if (!this.isInit || this.isOver || this.isSucc) return;
             // console.log("-------");
             this.AddStep();
-            this.SearchSetCurPoint(this._frontier.shift());
+            this.SetCurPoint(this.frontier.shift());
             this.curPoint.SetIsVisited();
             // console.log("---- 基准点：", this.curPoint.x, this.curPoint.y);
             let neighbors: MapPoint[] = this.mapGraph.GetNeighbors(this.curPoint, this.oppoFirst);
             for (let next of neighbors) {
                 if (next.isUnvisited) {
-                    this.AddProcessPoint(next);
-                    this.CheckSucc(next);
+                    this.AddFrontierPoint(next);
                     if (this.isSucc) {
                         break;
                     }
@@ -97,13 +96,13 @@ module Dylan {
             this.EmitReDraw();
         }
 
-        protected AddProcessPoint(point: MapPoint): void {
-            super.AddProcessPoint(point);
-            this._frontier.push(point);
+        protected AddFrontierPoint(point: MapPoint): void {
+            super.AddFrontierPoint(point);
+            this.frontier.push(point);
         }
 
         public Reset(): void {
-            this._frontier.splice(0);
+            this.frontier.splice(0);
             super.Reset();
         }
     }

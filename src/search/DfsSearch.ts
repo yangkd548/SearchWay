@@ -26,7 +26,7 @@ module Dylan {
             this.AddStep();
             console.log(this.step, this._isSucc, this.step >= this._maxStep);
             if (this.curPoint == null) {
-                this.SearchSetCurPoint(this.startPoint);
+                this.SetCurPoint(this.startPoint);
             }
             // console.log("---- 基准点：", this.cur.x, this.cur.y);
             let hasUnvisited = false;
@@ -34,8 +34,7 @@ module Dylan {
             for (let next of neighbors) {
                 if (next.isUnvisited) {
                     hasUnvisited = true;
-                    this.AddProcessPoint(next);
-                    this.CheckSucc(next);
+                    this.AddFrontierPoint(next);
                     break;
                 }
             }
@@ -45,9 +44,9 @@ module Dylan {
             this.EmitReDraw();
         }
 
-        protected AddProcessPoint(point: MapPoint): void {
-            super.AddProcessPoint(point);
-            this.SearchSetCurPoint(point);
+        protected AddFrontierPoint(point: MapPoint): void {
+            super.AddFrontierPoint(point);
+            this.SetCurPoint(point);
         }
 
         private Recall(): void {
@@ -56,7 +55,7 @@ module Dylan {
                 this._isOver = true;
             }
             else {
-                this.SearchSetCurPoint(this.curPoint.parent);
+                this.SetCurPoint(this.curPoint.parent);
             }
         }
 

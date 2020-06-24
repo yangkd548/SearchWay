@@ -33,7 +33,7 @@ module Dylan {
         }
 
         private _curPoint: MapPoint;
-        protected SearchSetCurPoint(value: MapPoint): void {
+        protected SetCurPoint(value: MapPoint): void {
             this._curPoint = value;
         }
         public get curPoint(): MapPoint {
@@ -162,12 +162,13 @@ module Dylan {
             return false;
         }
 
-        protected AddProcessPoint(point: MapPoint): void {
+        protected AddFrontierPoint(point: MapPoint): void {
             point.parent = this._curPoint;
             point.SetIsProcess();
+            this.CheckSucc(point);
         }
 
-        protected CheckSucc(point: MapPoint): void {
+        private CheckSucc(point: MapPoint): void {
             if(this._isSucc) return;
             this._isSucc = this.mapGraph.endPoint == point;
         }

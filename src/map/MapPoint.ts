@@ -13,6 +13,24 @@ module Dylan {
             return this._y;
         }
 
+        private _id:number;
+        public get id():number{
+            return this._id;
+        }
+
+        public SetValue(graph:MapGraph, x: number, y: number, weight: number = 1): void {
+            x = Math.min(graph.width - 1, Math.max(0, this.x));
+            y = Math.min(graph.height - 1, Math.max(0, this.y));
+            this._x = x;
+            this._y = y;
+            this._weight = weight;
+            this._id =  this.x + this.y * graph.width;
+        }
+
+        public get key(): string {
+            return this._x + "_" + this._y;
+        }
+
         //权值（权重）
         private readonly OriginWeight: number = 1;
         private _weight: number = this.OriginWeight;
@@ -29,6 +47,13 @@ module Dylan {
         public ResetWeight():void{
             this._weight = this.OriginWeight;
         }
+
+        public parent: MapPoint;
+
+        // private _cost:number = 1;
+        // public get cost():number{
+        //     return this._cost;
+        // }
 
         public GetNextWeight():number{
             switch (this._weight) {
@@ -76,26 +101,11 @@ module Dylan {
             return !this._isVisited && !this._isProcess;
         }
 
-        public parent: MapPoint;
-
-        public SetValue(x: number, y: number, weight: number = 1): void {
-            this._x = x;
-            this._y = y;
-            this._weight = weight;
-        }
-
-        public get key(): string {
-            return this._x + "_" + this._y;
-        }
-
-        // private _cost:number = 1;
-        // public get cost():number{
-        //     return this._cost;
-        // }
-
         public Reset(): void {
             this._weight = this.OriginWeight;
-            this.SetValue(-1, -1, this.weight);
+            this._x = -1;
+            this._y = -1;
+            this._weight = this.OriginWeight;
             this._isProcess = false;
             this._isVisited = false;
             this.parent = null;
