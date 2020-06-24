@@ -35,21 +35,21 @@ var Dylan;
             get: function () {
                 return this._driveMode;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(MapSearch.prototype, "isPause", {
             get: function () {
                 return this._isPause;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(MapSearch.prototype, "searchType", {
             get: function () {
                 return this._searchType;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         MapSearch.prototype.SetSearchType = function (type) {
@@ -85,14 +85,14 @@ var Dylan;
             get: function () {
                 return this.curSearch.isInit;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(MapSearch.prototype, "isRunning", {
             get: function () {
                 return this.curSearch.isRunning;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         MapSearch.prototype.SetMap = function (width, height) {

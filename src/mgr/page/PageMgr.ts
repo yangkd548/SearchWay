@@ -64,7 +64,6 @@ module Dylan {
         }
 
         public ShowUITo(parent: Node, name: string, args?: any, complete?: Laya.Handler): void {
-            // log(`显示页面 +++++++ ：${name} in [${parent.name}]`);
             if (Dylan[name] != null) {
                 this.AddPage(parent, name, args, complete);
             }

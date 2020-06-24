@@ -20,7 +20,7 @@ var Dylan;
                 }
                 return PageMgr._inst;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         PageMgr.prototype.CreateRootLayer = function (name, zOrder) {
@@ -56,7 +56,6 @@ var Dylan;
             this.ShowUITo(this._tipsRoot, "Tips", tipsObj);
         };
         PageMgr.prototype.ShowUITo = function (parent, name, args, complete) {
-            // log(`显示页面 +++++++ ：${name} in [${parent.name}]`);
             if (Dylan[name] != null) {
                 this.AddPage(parent, name, args, complete);
             }

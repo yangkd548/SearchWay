@@ -4,7 +4,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    }
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -18,20 +18,20 @@ var Dylan;
         function BfsSearch() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
             _this.oppoFirst = false;
-            _this._frontier = [];
+            _this.frontier = [];
             _this.fromStartDis = 0;
             return _this;
         }
         Object.defineProperty(BfsSearch.prototype, "isOver", {
             get: function () {
-                return this._frontier.length == 0;
+                return this.frontier.length == 0;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         BfsSearch.prototype.Start = function () {
             if (_super.prototype.Start.call(this)) {
-                this.AddProcessPoint(this.startPoint);
+                this.AddFrontierPoint(this.startPoint);
                 return true;
             }
             return false;
@@ -61,8 +61,8 @@ var Dylan;
         BfsSearch.prototype.SearchOneRound = function () {
             this.fromStartDis++;
             console.log("---------------", this.fromStartDis);
-            while (this._frontier.length > 0) {
-                var next = this._frontier[0];
+            while (this.frontier.length > 0) {
+                var next = this.frontier[0];
                 if (Math.abs(next.x - this.mapGraph.startPoint.x) + Math.abs(next.y - this.mapGraph.startPoint.y) > this.fromStartDis) {
                     break;
                 }
@@ -76,10 +76,10 @@ var Dylan;
         BfsSearch.prototype.SearchOneSide = function () {
             this.fromStartDis++;
             console.log("---------------", this.fromStartDis);
-            if (this._frontier.length > 0) {
+            if (this.frontier.length > 0) {
                 var flag = null;
-                while (this._frontier.length > 0) {
-                    var next = this._frontier[0];
+                while (this.frontier.length > 0) {
+                    var next = this.frontier[0];
                     var newFlag = (next.x - this.mapGraph.startPoint.x) / (next.y - this.mapGraph.startPoint.y + 0.001) > 0;
                     if (flag == null) {
                         flag = newFlag;
@@ -97,17 +97,14 @@ var Dylan;
         BfsSearch.prototype.DoSearchOneStep = function () {
             if (!this.isInit || this.isOver || this.isSucc)
                 return;
-            // console.log("-------");
             this.AddStep();
-            this.SearchSetCurPoint(this._frontier.shift());
+            this.SetCurPoint(this.frontier.shift());
             this.curPoint.SetIsVisited();
-            // console.log("---- 基准点：", this.curPoint.x, this.curPoint.y);
             var neighbors = this.mapGraph.GetNeighbors(this.curPoint, this.oppoFirst);
             for (var _i = 0, neighbors_1 = neighbors; _i < neighbors_1.length; _i++) {
                 var next = neighbors_1[_i];
                 if (next.isUnvisited) {
-                    this.AddProcessPoint(next);
-                    this.CheckSucc(next);
+                    this.AddFrontierPoint(next);
                     if (this.isSucc) {
                         break;
                     }
@@ -115,12 +112,12 @@ var Dylan;
             }
             this.EmitReDraw();
         };
-        BfsSearch.prototype.AddProcessPoint = function (point) {
-            _super.prototype.AddProcessPoint.call(this, point);
-            this._frontier.push(point);
+        BfsSearch.prototype.AddFrontierPoint = function (point) {
+            _super.prototype.AddFrontierPoint.call(this, point);
+            this.frontier.push(point);
         };
         BfsSearch.prototype.Reset = function () {
-            this._frontier.splice(0);
+            this.frontier.splice(0);
             _super.prototype.Reset.call(this);
         };
         return BfsSearch;

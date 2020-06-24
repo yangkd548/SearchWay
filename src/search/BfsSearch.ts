@@ -79,11 +79,9 @@ module Dylan {
 
         protected DoSearchOneStep(): void {
             if (!this.isInit || this.isOver || this.isSucc) return;
-            // console.log("-------");
             this.AddStep();
             this.SetCurPoint(this.frontier.shift());
             this.curPoint.SetIsVisited();
-            // console.log("---- 基准点：", this.curPoint.x, this.curPoint.y);
             let neighbors: MapPoint[] = this.mapGraph.GetNeighbors(this.curPoint, this.oppoFirst);
             for (let next of neighbors) {
                 if (next.isUnvisited) {

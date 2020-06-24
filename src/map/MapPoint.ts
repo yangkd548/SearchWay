@@ -19,8 +19,8 @@ module Dylan {
         }
 
         public SetValue(graph:MapGraph, x: number, y: number, weight: number = 1): void {
-            x = Math.min(graph.width - 1, Math.max(0, this.x));
-            y = Math.min(graph.height - 1, Math.max(0, this.y));
+            x = Math.min(graph.width - 1, Math.max(0, x));
+            y = Math.min(graph.height - 1, Math.max(0, y));
             this._x = x;
             this._y = y;
             this._weight = weight;

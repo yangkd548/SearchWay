@@ -4,7 +4,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    }
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -25,7 +25,7 @@ var Dylan;
             get: function () {
                 return this._isOver;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         DfsSearch.prototype.SearchCustomSteps = function () {
@@ -41,23 +41,19 @@ var Dylan;
             }
         };
         DfsSearch.prototype.DoSearchOneStep = function () {
-            // console.log("-------");
             if (!this.isInit || this.isOver || this.isSucc)
                 return;
             this.AddStep();
-            console.log(this.step, this._isSucc, this.step >= this._maxStep);
             if (this.curPoint == null) {
-                this.SearchSetCurPoint(this.startPoint);
+                this.SetCurPoint(this.startPoint);
             }
-            // console.log("---- 基准点：", this.cur.x, this.cur.y);
             var hasUnvisited = false;
             var neighbors = this.mapGraph.GetNeighbors(this.curPoint, this.oppoFirst);
             for (var _i = 0, neighbors_1 = neighbors; _i < neighbors_1.length; _i++) {
                 var next = neighbors_1[_i];
                 if (next.isUnvisited) {
                     hasUnvisited = true;
-                    this.AddProcessPoint(next);
-                    this.CheckSucc(next);
+                    this.AddFrontierPoint(next);
                     break;
                 }
             }
@@ -66,9 +62,9 @@ var Dylan;
             }
             this.EmitReDraw();
         };
-        DfsSearch.prototype.AddProcessPoint = function (point) {
-            _super.prototype.AddProcessPoint.call(this, point);
-            this.SearchSetCurPoint(point);
+        DfsSearch.prototype.AddFrontierPoint = function (point) {
+            _super.prototype.AddFrontierPoint.call(this, point);
+            this.SetCurPoint(point);
         };
         DfsSearch.prototype.Recall = function () {
             this.curPoint.SetIsVisited();
@@ -76,7 +72,7 @@ var Dylan;
                 this._isOver = true;
             }
             else {
-                this.SearchSetCurPoint(this.curPoint.parent);
+                this.SetCurPoint(this.curPoint.parent);
             }
         };
         DfsSearch.prototype.Reset = function () {

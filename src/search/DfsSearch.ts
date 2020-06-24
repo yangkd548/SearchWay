@@ -21,14 +21,11 @@ module Dylan {
         }
 
         protected DoSearchOneStep(): void {
-            // console.log("-------");
             if (!this.isInit || this.isOver || this.isSucc) return;
             this.AddStep();
-            console.log(this.step, this._isSucc, this.step >= this._maxStep);
             if (this.curPoint == null) {
                 this.SetCurPoint(this.startPoint);
             }
-            // console.log("---- 基准点：", this.cur.x, this.cur.y);
             let hasUnvisited = false;
             let neighbors: MapPoint[] = this.mapGraph.GetNeighbors(this.curPoint, this.oppoFirst);
             for (let next of neighbors) {

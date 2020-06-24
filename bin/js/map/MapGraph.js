@@ -8,14 +8,14 @@ var Dylan;
             get: function () {
                 return this._width;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(MapGraph.prototype, "height", {
             get: function () {
                 return this._height;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         MapGraph.prototype.SetStartPoint = function (x, y) {
@@ -26,7 +26,7 @@ var Dylan;
             get: function () {
                 return this._startPoint;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         MapGraph.prototype.SetEndPoint = function (x, y) {
@@ -37,7 +37,7 @@ var Dylan;
             get: function () {
                 return this._endPoint;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         MapGraph.prototype.SetMap = function (width, height, reset) {
@@ -56,7 +56,7 @@ var Dylan;
                     else if (needResetPoints) {
                         this.grids[x][y].Reset();
                     }
-                    this.grids[x][y].SetValue(x, y);
+                    this.grids[x][y].SetValue(this, x, y);
                 }
             }
         };
