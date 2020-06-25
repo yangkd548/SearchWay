@@ -13,18 +13,18 @@ module Dylan {
             return this._y;
         }
 
-        private _id:number;
-        public get id():number{
+        private _id: number;
+        public get id(): number {
             return this._id;
         }
 
-        public SetValue(graph:MapGraph, x: number, y: number, weight: number = 1): void {
+        public SetValue(graph: MapGraph, x: number, y: number, weight: number = 1): void {
             x = Math.min(graph.width - 1, Math.max(0, x));
             y = Math.min(graph.height - 1, Math.max(0, y));
             this._x = x;
             this._y = y;
             this._weight = weight;
-            this._id =  this.x + this.y * graph.width;
+            this._id = this.x + this.y * graph.width;
         }
 
         public get key(): string {
@@ -38,29 +38,38 @@ module Dylan {
             return this._weight;
         }
         public SetWeight(weight: number): void {
-            if(weight>=1 && this._weight <= Number.MAX_VALUE){
+            if (weight >= 1 && this._weight <= Infinity) {
                 this._weight = weight;
                 GEventMgr.Emit(MapPoint.PointCostChanged);
-            }            
+            }
         }
 
-        public ResetWeight():void{
+        public ResetWeight(): void {
             this._weight = this.OriginWeight;
         }
 
-        public parent: MapPoint;
+        private _parent: MapPoint;
+        public set parent(parent: MapPoint) {
+            this._parent = parent;
+        }
+        public get parent():MapPoint{
+            return this._parent;
+        }
 
-        // private _cost:number = 1;
-        // public get cost():number{
-        //     return this._cost;
-        // }
+        private _cost: number;
+        public get cost(): number {
+            return this._cost;
+        }
+        public set cost(value:number){
+            this._cost = value;
+        }
 
-        public GetNextWeight():number{
+        public GetNextWeight(): number {
             switch (this._weight) {
                 case this.OriginWeight:
-                    return Number.MAX_VALUE;
+                    return Infinity;
                     break;
-                case Number.MAX_VALUE:
+                case Infinity:
                     return -1;
                     break;
                 default:
@@ -93,7 +102,7 @@ module Dylan {
         //     this.SetIsProcess();
         // }
 
-        public SetIsUnvisited():void{
+        public SetIsUnvisited(): void {
             this._isProcess = false;
             this._isVisited = false;
         }
@@ -108,10 +117,12 @@ module Dylan {
             this._weight = this.OriginWeight;
             this._isProcess = false;
             this._isVisited = false;
-            this.parent = null;
+            this._parent = null;
+            this._cost = 0;
         }
 
-        public IsSamePos(other:MapPoint):boolean{
+        //暂时没用到
+        public IsSamePos(other: MapPoint): boolean {
             return other && this.x == other.x && this.y == other.y;
         }
     }

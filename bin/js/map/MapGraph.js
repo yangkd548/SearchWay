@@ -65,31 +65,38 @@ var Dylan;
         };
         MapGraph.prototype.GetNeighbors = function (origin, oppoFirst) {
             if (oppoFirst === void 0) { oppoFirst = false; }
-            var parent = origin.parent;
-            var result = [];
-            var posArr = [[origin.x, origin.y - 1], [origin.x + 1, origin.y], [origin.x, origin.y + 1], [origin.x - 1, origin.y]];
-            var length = posArr.length;
-            var pointArr = [];
-            for (var i = 0; i < length; i++) {
-                var pos = posArr[i];
-                pointArr.push(this.GetPoint(pos[0], pos[1]));
-            }
-            //为能够达到按照从中心点，顺时针搜索，需要从父节点开始按照顺时针进行添加，遇到障碍就停止
-            var fromIndex = parent ? (pointArr.indexOf(parent) + (oppoFirst ? 2 : 0)) : 0;
-            var has = false;
-            for (var i = 0; i < length; i++) {
-                var index = (i + fromIndex) % length;
-                var point = pointArr[index];
-                if (point != null) {
-                    result.push(point);
+            var relativePosArr = [[origin.x, origin.y - 1], [origin.x + 1, origin.y], [origin.x, origin.y + 1], [origin.x - 1, origin.y]];
+            var edges = [];
+            for (var i = 0; i < relativePosArr.length; i++) {
+                var pos = relativePosArr[i];
+                var point = this.GetPoint(pos[0], pos[1]);
+                if (point && point.weight != Infinity) {
+                    edges.push(point);
                 }
             }
-            return result;
+            //这纯粹是为了栅格上的审美目的：使用棋盘格模式，翻转其他瓷砖的边缘，这样沿着对角线的路径最终会变成阶梯，而不是先做所有的东西移动，然后再做所有的南北移动（那样就变成折线路径）。
+            if ((origin.x + origin.y) % 2 == 0) {
+                edges.reverse();
+            }
+            return edges;
+            //这纯粹是为了栅格上的审美目的：当前遍历的节点，整体按照顺时针顺序排列（需要从父节点开始按照顺时针进行添加，遇到障碍就停止）
+            // let result: MapPoint[] = [];
+            // let parent = origin.parent;
+            // let fromIndex = parent ? (edges.indexOf(parent) + (oppoFirst ? 2 : 0)) : 0;
+            // let has: boolean = false;
+            // for (let i = 0; i < edges.length; i++) {
+            //     let index = (i + fromIndex) % length;
+            //     result.push(edges[index]);
+            // }
+            // return result;
         };
         MapGraph.prototype.GetPoint = function (x, y) {
             if (x >= this.width || y >= this.height)
                 return null;
             return this.grids[x] ? this.grids[x][y] : null;
+        };
+        MapGraph.prototype.GetCost = function (from, to) {
+            return from.cost + to.weight;
         };
         return MapGraph;
     }());

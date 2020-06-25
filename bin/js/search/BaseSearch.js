@@ -116,6 +116,8 @@ var Dylan;
             this.driveTimes++;
         };
         Object.defineProperty(BaseSearch.prototype, "enable", {
+            //只允许被继承的一种写法，同类修饰符abstract
+            // protected constructor() { }
             set: function (value) {
                 if (value) {
                     Dylan.GEventMgr.On(Dylan.MapPoint.PointCostChanged, this, this.EmitReDraw);
@@ -170,21 +172,29 @@ var Dylan;
         BaseSearch.prototype.IsWayPoint = function (point) {
             if (!this.isSucc)
                 return false;
-            var warPoint = this.endPoint;
-            while (warPoint.parent) {
-                if (warPoint == point) {
+            var wayPoint = this.endPoint;
+            while (wayPoint.parent && wayPoint != this.startPoint) {
+                if (wayPoint == point) {
+                    Dylan.log("绘制 路径：", point.key);
                     return true;
                 }
                 else {
-                    warPoint = warPoint.parent;
+                    wayPoint = wayPoint.parent;
                 }
             }
             return false;
         };
         BaseSearch.prototype.AddFrontierPoint = function (point) {
-            point.parent = this._curPoint;
+            if (point != this.startPoint) {
+                point.parent = this._curPoint;
+            }
+            if (point == this.endPoint) {
+                Dylan.log("111111111----------");
+            }
             point.SetIsProcess();
             this.CheckSucc(point);
+            // if (!this.isSucc) {
+            // }
         };
         BaseSearch.prototype.CheckSucc = function (point) {
             if (this._isSucc)

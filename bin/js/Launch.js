@@ -11,10 +11,10 @@ var Dylan;
             //程序入口
             Laya.init(760, 510, Laya.WebGL);
             // Laya.ResourceVersion.enable("version.json", Handler.create(null, beginLoad), Laya.ResourceVersion.FILENAME_VERSION);
-            Laya.loader.load(["res/atlas/comp.atlas", "res/atlas/common.atlas"], Handler.create(null, this.OpenSearchWarPage));
+            Laya.loader.load(["res/atlas/comp.atlas", "res/atlas/common.atlas"], Handler.create(null, this.OpenSearchWayPage));
             // this.CreateMapSearch();
         }
-        Launch.prototype.OpenSearchWarPage = function () {
+        Launch.prototype.OpenSearchWayPage = function () {
             Dylan.GTipsMgr = Dylan.TipsMgr.Inst;
             Dylan.GPageMgr = Dylan.PageMgr.Inst;
             Dylan.GPageMgr.ShowPage("SearchWayPage");

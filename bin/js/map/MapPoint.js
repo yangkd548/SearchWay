@@ -56,7 +56,7 @@ var Dylan;
             configurable: true
         });
         MapPoint.prototype.SetWeight = function (weight) {
-            if (weight >= 1 && this._weight <= Number.MAX_VALUE) {
+            if (weight >= 1 && this._weight <= Infinity) {
                 this._weight = weight;
                 Dylan.GEventMgr.Emit(MapPoint.PointCostChanged);
             }
@@ -64,16 +64,32 @@ var Dylan;
         MapPoint.prototype.ResetWeight = function () {
             this._weight = this.OriginWeight;
         };
-        // private _cost:number = 1;
-        // public get cost():number{
-        //     return this._cost;
-        // }
+        Object.defineProperty(MapPoint.prototype, "parent", {
+            get: function () {
+                return this._parent;
+            },
+            set: function (parent) {
+                this._parent = parent;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(MapPoint.prototype, "cost", {
+            get: function () {
+                return this._cost;
+            },
+            set: function (value) {
+                this._cost = value;
+            },
+            enumerable: false,
+            configurable: true
+        });
         MapPoint.prototype.GetNextWeight = function () {
             switch (this._weight) {
                 case this.OriginWeight:
-                    return Number.MAX_VALUE;
+                    return Infinity;
                     break;
-                case Number.MAX_VALUE:
+                case Infinity:
                     return -1;
                     break;
                 default:
@@ -124,8 +140,10 @@ var Dylan;
             this._weight = this.OriginWeight;
             this._isProcess = false;
             this._isVisited = false;
-            this.parent = null;
+            this._parent = null;
+            this._cost = 0;
         };
+        //暂时没用到
         MapPoint.prototype.IsSamePos = function (other) {
             return other && this.x == other.x && this.y == other.y;
         };

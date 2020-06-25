@@ -51,7 +51,7 @@ module Dylan {
         public abstract get isOver(): boolean;
 
         protected _isSucc: boolean = false;
-        protected get isSucc(): boolean {
+        public get isSucc(): boolean {
             return this._isSucc;
         }
 
@@ -64,7 +64,7 @@ module Dylan {
             return this._step;
         }
         protected AddStep(): void {
-            if(this.isSucc) return;
+            if (this.isSucc) return;
             this._step++;
         }
         protected SubStep(): void {
@@ -92,6 +92,9 @@ module Dylan {
         public AddDriveTimes(): void {
             this.driveTimes++;
         }
+
+        //只允许被继承的一种写法，同类修饰符abstract
+        // protected constructor() { }
 
         public set enable(value: boolean) {
             if (value) {
@@ -150,26 +153,34 @@ module Dylan {
 
         public IsWayPoint(point: MapPoint): boolean {
             if (!this.isSucc) return false;
-            let warPoint = this.endPoint;
-            while (warPoint.parent) {
-                if (warPoint == point) {
+            let wayPoint = this.endPoint;
+            while (wayPoint.parent && wayPoint != this.startPoint) {
+                if (wayPoint == point) {
+                    log("绘制 路径：", point.key);
                     return true;
                 }
                 else {
-                    warPoint = warPoint.parent;
+                    wayPoint = wayPoint.parent;
                 }
             }
             return false;
         }
 
         protected AddFrontierPoint(point: MapPoint): void {
-            point.parent = this._curPoint;
+            if (point != this.startPoint) {
+                point.parent = this._curPoint;
+            }
+            if(point == this.endPoint){
+                log("111111111----------");
+            }
             point.SetIsProcess();
             this.CheckSucc(point);
+            // if (!this.isSucc) {
+            // }
         }
 
         private CheckSucc(point: MapPoint): void {
-            if(this._isSucc) return;
+            if (this._isSucc) return;
             this._isSucc = this.mapGraph.endPoint == point;
         }
 

@@ -12,7 +12,7 @@ module Dylan {
         }
 
         protected _startPoint: MapPoint;
-        public SetStartPoint(x:number, y:number):void {
+        public SetStartPoint(x: number, y: number): void {
             this._startPoint = this.GetPoint(x, y);
             this._startPoint.ResetWeight();
         }
@@ -21,7 +21,7 @@ module Dylan {
         }
 
         protected _endPoint: MapPoint;
-        public SetEndPoint(x:number, y:number):void {
+        public SetEndPoint(x: number, y: number): void {
             this._endPoint = this.GetPoint(x, y);
             this._endPoint.ResetWeight();
         }
@@ -56,31 +56,39 @@ module Dylan {
         }
 
         public GetNeighbors(origin: MapPoint, oppoFirst: boolean = false): Array<MapPoint> {
-            let parent = origin.parent;
-            let result: MapPoint[] = [];
-            let posArr = [[origin.x, origin.y - 1], [origin.x + 1, origin.y], [origin.x, origin.y + 1], [origin.x - 1, origin.y]];
-            let length = posArr.length;
-            let pointArr: MapPoint[] = [];
-            for (let i = 0; i < length; i++) {
-                let pos = posArr[i];
-                pointArr.push(this.GetPoint(pos[0], pos[1]));
-            }
-            //为能够达到按照从中心点，顺时针搜索，需要从父节点开始按照顺时针进行添加，遇到障碍就停止
-            let fromIndex = parent ? (pointArr.indexOf(parent) + (oppoFirst ? 2 : 0)) : 0;
-            let has: boolean = false;
-            for (let i = 0; i < length; i++) {
-                let index = (i + fromIndex) % length;
-                let point: MapPoint = pointArr[index];
-                if (point != null) {
-                    result.push(point);
+            let relativePosArr = [[origin.x, origin.y - 1], [origin.x + 1, origin.y], [origin.x, origin.y + 1], [origin.x - 1, origin.y]];
+            let edges: MapPoint[] = [];
+            for (let i = 0; i < relativePosArr.length; i++) {
+                let pos = relativePosArr[i];
+                let point = this.GetPoint(pos[0], pos[1]);
+                if (point && point.weight != Infinity) {
+                    edges.push(point);
                 }
             }
-            return result;
+            //这纯粹是为了栅格上的审美目的：使用棋盘格模式，翻转其他瓷砖的边缘，这样沿着对角线的路径最终会变成阶梯，而不是先做所有的东西移动，然后再做所有的南北移动（那样就变成折线路径）。
+            if ((origin.x + origin.y) % 2 == 0) {
+                edges.reverse();
+            }
+            return edges;
+            //这纯粹是为了栅格上的审美目的：当前遍历的节点，整体按照顺时针顺序排列（需要从父节点开始按照顺时针进行添加，遇到障碍就停止）
+            // let result: MapPoint[] = [];
+            // let parent = origin.parent;
+            // let fromIndex = parent ? (edges.indexOf(parent) + (oppoFirst ? 2 : 0)) : 0;
+            // let has: boolean = false;
+            // for (let i = 0; i < edges.length; i++) {
+            //     let index = (i + fromIndex) % length;
+            //     result.push(edges[index]);
+            // }
+            // return result;
         }
 
         public GetPoint(x: number, y: number): MapPoint {
             if (x >= this.width || y >= this.height) return null;
             return this.grids[x] ? this.grids[x][y] : null;
+        }
+
+        public GetCost(from: MapPoint, to: MapPoint) {
+            return from.cost + to.weight;
         }
     }
 }

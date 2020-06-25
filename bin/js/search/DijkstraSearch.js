@@ -23,11 +23,11 @@ var Dylan;
                 return;
             this.AddStep();
             this.SetCurPoint(this.frontier.shift());
-            this.curPoint.SetIsVisited();
-            var neighbors = this.mapGraph.GetNeighbors(this.curPoint, this.oppoFirst);
-            for (var _i = 0, neighbors_1 = neighbors; _i < neighbors_1.length; _i++) {
-                var next = neighbors_1[_i];
-                if (next.isUnvisited) {
+            for (var _i = 0, _a = this.mapGraph.GetNeighbors(this.curPoint); _i < _a.length; _i++) {
+                var next = _a[_i];
+                var newCost = this.curPoint.cost + this.mapGraph.GetCost(this.curPoint, next);
+                if (!next.cost || newCost < next.cost) {
+                    next.cost = newCost;
                     this.AddFrontierPoint(next);
                     if (this.isSucc) {
                         break;
@@ -35,30 +35,62 @@ var Dylan;
                 }
             }
             this.EmitReDraw();
-            this.frontier.push(this.startPoint);
-            var came_from = {};
-            came_from[this.startPoint.id] = null;
-            var cost_so_far = {};
-            cost_so_far[this.startPoint.id] = 0;
-            while (this.frontier.length > 0) {
-                this.SetCurPoint(this.frontier.shift());
-                if (this.curPoint == this.endPoint)
-                    break;
-                //GetNeighbors --> edges_from
-                for (var _a = 0, _b = this.mapGraph.GetNeighbors(this.curPoint); _a < _b.length; _a++) {
-                    var next = _b[_a];
-                    // let new_cost = cost_so_far[this.curPoint.id] + this.mapGraph.cost(this.curPoint, next);
-                    // if ((!cost_so_far[next.id]) || new_cost < cost_so_far[next.id]) {
-                    //     cost_so_far[next.id] = new_cost;
-                    //     let priority = new_cost;
-                    //     this.frontier.push(next, priority);
-                    //     came_from[next.id] = this.curPoint;//父子关系
-                    // }
+        };
+        DijkstraSearch.prototype.AddFrontierPoint = function (point) {
+            _super.prototype.AddFrontierPoint.call(this, point);
+            var lastPos = this.frontier.indexOf(point);
+            if (lastPos != -1) {
+                this.frontier.splice(lastPos, 1);
+            }
+            this.InsertIncArr(this.frontier, "cost", point, 0, lastPos);
+        };
+        //二分法插入对象
+        DijkstraSearch.prototype.InsertIncArr = function (arr, key, input, min, max) {
+            if (min === void 0) { min = -1; }
+            if (max === void 0) { max = -1; }
+            if (min >= arr.length || min < 0)
+                min = 0;
+            if (max >= arr.length || max < 0)
+                max = arr.length - 1;
+            if (min > max) {
+                var index = min;
+                min = max;
+                max = min;
+            }
+            if (min == max) {
+                arr.splice(min, 0, input);
+            }
+            else {
+                var minObj = arr[min];
+                var maxObj = arr[max];
+                var inputValue = input[key];
+                if (inputValue >= maxObj[key]) {
+                    arr.splice(max + 1, 0, input);
+                }
+                else {
+                    if (inputValue < minObj[key]) {
+                        arr.splice(min, 0, input);
+                    }
+                    else {
+                        if (min + 1 == max) {
+                            arr.splice(max, 0, input);
+                        }
+                        else {
+                            var midIndex = Math.floor((max + min) / 2);
+                            var midObj = arr[midIndex];
+                            if (midObj[key] > inputValue) {
+                                this.InsertIncArr(arr, key, input, min, midIndex);
+                            }
+                            else {
+                                this.InsertIncArr(arr, key, input, midIndex, max);
+                            }
+                        }
+                    }
                 }
             }
         };
         return DijkstraSearch;
-    }(Dylan.BfsSearch));
+    }(Dylan.BfsBaseSearch));
     Dylan.DijkstraSearch = DijkstraSearch;
 })(Dylan || (Dylan = {}));
 //# sourceMappingURL=DijkstraSearch.js.map

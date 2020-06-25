@@ -16,93 +16,15 @@ var Dylan;
     var BfsSearch = /** @class */ (function (_super) {
         __extends(BfsSearch, _super);
         function BfsSearch() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.oppoFirst = false;
-            _this.frontier = [];
-            _this.fromStartDis = 0;
-            return _this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
-        Object.defineProperty(BfsSearch.prototype, "isOver", {
-            get: function () {
-                return this.frontier.length == 0;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        BfsSearch.prototype.Start = function () {
-            if (_super.prototype.Start.call(this)) {
-                this.AddFrontierPoint(this.startPoint);
-                return true;
-            }
-            return false;
-        };
-        BfsSearch.prototype.SearchCustomSteps = function () {
-            switch (this.searchStep) {
-                case Dylan.E_SearchStep.OncePoint:
-                    if (this.driveTimes % 1 == 0) {
-                        this.DoSearchSteps();
-                    }
-                    break;
-                case Dylan.E_SearchStep.OnceRound:
-                    if (this.driveTimes % 10 == 0) {
-                        this.SearchOneRound();
-                    }
-                    break;
-                case Dylan.E_SearchStep.OnceSide:
-                    if (this.driveTimes % 3 == 0) {
-                        this.SearchOneSide();
-                    }
-                    break;
-                default:
-                    this.DoSearchSteps();
-                    break;
-            }
-        };
-        BfsSearch.prototype.SearchOneRound = function () {
-            this.fromStartDis++;
-            console.log("---------------", this.fromStartDis);
-            while (this.frontier.length > 0) {
-                var next = this.frontier[0];
-                if (Math.abs(next.x - this.mapGraph.startPoint.x) + Math.abs(next.y - this.mapGraph.startPoint.y) > this.fromStartDis) {
-                    break;
-                }
-                this.DoSearchOneStep();
-            }
-            if (this.isOver) {
-                Laya.timer.clear(this, this.SearchOneRound);
-                this.fromStartDis = 0;
-            }
-        };
-        BfsSearch.prototype.SearchOneSide = function () {
-            this.fromStartDis++;
-            console.log("---------------", this.fromStartDis);
-            if (this.frontier.length > 0) {
-                var flag = null;
-                while (this.frontier.length > 0) {
-                    var next = this.frontier[0];
-                    var newFlag = (next.x - this.mapGraph.startPoint.x) / (next.y - this.mapGraph.startPoint.y + 0.001) > 0;
-                    if (flag == null) {
-                        flag = newFlag;
-                    }
-                    else if (flag != newFlag) {
-                        break;
-                    }
-                    this.DoSearchOneStep();
-                }
-            }
-            if (this.isOver) {
-                Laya.timer.clear(this, this.SearchOneSide);
-            }
-        };
         BfsSearch.prototype.DoSearchOneStep = function () {
             if (!this.isInit || this.isOver || this.isSucc)
                 return;
             this.AddStep();
             this.SetCurPoint(this.frontier.shift());
-            this.curPoint.SetIsVisited();
-            var neighbors = this.mapGraph.GetNeighbors(this.curPoint, this.oppoFirst);
-            for (var _i = 0, neighbors_1 = neighbors; _i < neighbors_1.length; _i++) {
-                var next = neighbors_1[_i];
+            for (var _i = 0, _a = this.mapGraph.GetNeighbors(this.curPoint); _i < _a.length; _i++) {
+                var next = _a[_i];
                 if (next.isUnvisited) {
                     this.AddFrontierPoint(next);
                     if (this.isSucc) {
@@ -116,12 +38,8 @@ var Dylan;
             _super.prototype.AddFrontierPoint.call(this, point);
             this.frontier.push(point);
         };
-        BfsSearch.prototype.Reset = function () {
-            this.frontier.splice(0);
-            _super.prototype.Reset.call(this);
-        };
         return BfsSearch;
-    }(Dylan.BaseSearch));
+    }(Dylan.BfsBaseSearch));
     Dylan.BfsSearch = BfsSearch;
 })(Dylan || (Dylan = {}));
 //# sourceMappingURL=BfsSearch.js.map

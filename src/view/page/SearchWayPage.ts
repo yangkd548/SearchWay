@@ -336,7 +336,7 @@ module Dylan {
 							case 1:
 								curColor = this.GridColorNoVisited_1;
 								break;
-							case Number.MAX_VALUE:
+							case Infinity:
 								curColor = this.GridColorNoVisited_Max;
 								break;
 							default:
