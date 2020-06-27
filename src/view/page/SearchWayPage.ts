@@ -62,7 +62,7 @@ module Dylan {
 			this.startY.on(Laya.Event.FOCUS, this, this.OnSetEditStart, [this.startY]);
 			this.endX.on(Laya.Event.FOCUS, this, this.OnSetEditEnd, [this.endX]);
 			this.endY.on(Laya.Event.FOCUS, this, this.OnSetEditEnd, [this.endY]);
-			this.mapSp.on(Laya.Event.RIGHT_CLICK, this, this.OnEditSpePoint);
+			this.mapSp.on(Laya.Event.RIGHT_CLICK, this, this.OnEditSpePoint, [true]);
 
 			//通行成本 设置页
 			this.mapSp.on(Laya.Event.MOUSE_DOWN, this, this.OnEnableEditWeight);
@@ -184,7 +184,7 @@ module Dylan {
 			this.curEditPoint = EditPointType.End;
 		}
 
-		private OnEditSpePoint(): void {
+		private OnEditSpePoint(isAutoSwitch:boolean = false): void {
 			let vec2 = this.GetClickMapSpPoint();
 			if (vec2) {
 				switch (this.curEditPoint) {
@@ -193,35 +193,54 @@ module Dylan {
 						this.startX.text = vec2.x.toString();
 						this.startY.text = vec2.y.toString();
 						GMapSearch.SetStartPoint(vec2.x, vec2.y);
-						this.curEditPoint = EditPointType.End;
+						if(isAutoSwitch == true){
+							this.curEditPoint = EditPointType.End;
+						}
 						break;
 					case EditPointType.End:
 						this.endX.text = vec2.x.toString();
 						this.endY.text = vec2.y.toString();
 						GMapSearch.SetEndPoint(vec2.x, vec2.y);
-						this.curEditPoint = EditPointType.Start;
+						if(isAutoSwitch == true){
+							this.curEditPoint = EditPointType.Start;
+						}
 						break;
 				}
 			}
 		}
 
+		//左键点击，设置通行权值
+		//或
+		//左键点击，设置起点或终点，仅支持拖动
 		private OnEnableEditWeight(): void {
 			if (GMapSearch.isRunning) return;
 			let vec2 = this.GetClickMapSpPoint();
 			if (vec2) {
 				let point = GMapSearch.GetPoint(vec2.x, vec2.y);
-				this.curSetWeight = point.GetNextWeight();
-				if (this.curSetWeight == -1) {
-					this.curSetWeight = this.defaultWeightValue;
+				if (point == GMapSearch.curSearch.startPoint) {
+					this.curEditPoint = EditPointType.Start;
+					this.mapSp.on(Laya.Event.MOUSE_MOVE, this, this.OnEditSpePoint);
 				}
-				this.OnEditWeight();
-				this.mapSp.on(Laya.Event.MOUSE_MOVE, this, this.OnEditWeight);
+				else if (point == GMapSearch.curSearch.endPoint) {
+					this.curEditPoint = EditPointType.End;
+					this.mapSp.on(Laya.Event.MOUSE_MOVE, this, this.OnEditSpePoint);
+				}
+				else {
+					this.curSetWeight = point.GetNextWeight();
+					if (this.curSetWeight == -1) {
+						this.curSetWeight = this.defaultWeightValue;
+					}
+					this.OnEditWeight();
+					this.mapSp.on(Laya.Event.MOUSE_MOVE, this, this.OnEditWeight);
+				}
 			}
 		}
 
 		private OnDisableEditWeight(): void {
 			CopyVec2(this.lastEditWeightPos, this.invalidPos);
 			this.mapSp.off(Laya.Event.MOUSE_MOVE, this, this.OnEditWeight);
+			this.curEditPoint = EditPointType.None;
+			this.mapSp.off(Laya.Event.MOUSE_MOVE, this, this.OnEditSpePoint);
 		}
 
 		private OnEditWeight(): Laya.Vector2 {
@@ -247,7 +266,6 @@ module Dylan {
 
 		private OnSelectCostRadioGroup(index: number): void {
 			this.defaultWeightValue = index + 1;
-			log("---------------:", this.defaultWeightValue);
 		}
 
 		private OnSliderChange(value): void {
@@ -332,7 +350,6 @@ module Dylan {
 		}
 
 		private OnSearchReset(): void {
-			// this.InitDraw();
 			this.Clear();
 		}
 

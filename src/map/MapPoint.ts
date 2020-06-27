@@ -157,7 +157,7 @@ module Dylan {
             this.cost = 0;
             this._isProcess = false;
             this._isVisited = false;
-            this._parent = null;
+            // this._parent = null;
         }
 
         // private ResetBase(): void {

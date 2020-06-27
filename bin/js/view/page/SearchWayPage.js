@@ -64,7 +64,7 @@ var Dylan;
             _this.startY.on(Laya.Event.FOCUS, _this, _this.OnSetEditStart, [_this.startY]);
             _this.endX.on(Laya.Event.FOCUS, _this, _this.OnSetEditEnd, [_this.endX]);
             _this.endY.on(Laya.Event.FOCUS, _this, _this.OnSetEditEnd, [_this.endY]);
-            _this.mapSp.on(Laya.Event.RIGHT_CLICK, _this, _this.OnEditSpePoint);
+            _this.mapSp.on(Laya.Event.RIGHT_CLICK, _this, _this.OnEditSpePoint, [true]);
             //通行成本 设置页
             _this.mapSp.on(Laya.Event.MOUSE_DOWN, _this, _this.OnEnableEditWeight);
             _this.mapSp.on(Laya.Event.MOUSE_UP, _this, _this.OnDisableEditWeight);
@@ -169,7 +169,8 @@ var Dylan;
         SearchWayPage.prototype.OnSetEditEnd = function () {
             this.curEditPoint = EditPointType.End;
         };
-        SearchWayPage.prototype.OnEditSpePoint = function () {
+        SearchWayPage.prototype.OnEditSpePoint = function (isAutoSwitch) {
+            if (isAutoSwitch === void 0) { isAutoSwitch = false; }
             var vec2 = this.GetClickMapSpPoint();
             if (vec2) {
                 switch (this.curEditPoint) {
@@ -178,34 +179,53 @@ var Dylan;
                         this.startX.text = vec2.x.toString();
                         this.startY.text = vec2.y.toString();
                         Dylan.GMapSearch.SetStartPoint(vec2.x, vec2.y);
-                        this.curEditPoint = EditPointType.End;
+                        if (isAutoSwitch == true) {
+                            this.curEditPoint = EditPointType.End;
+                        }
                         break;
                     case EditPointType.End:
                         this.endX.text = vec2.x.toString();
                         this.endY.text = vec2.y.toString();
                         Dylan.GMapSearch.SetEndPoint(vec2.x, vec2.y);
-                        this.curEditPoint = EditPointType.Start;
+                        if (isAutoSwitch == true) {
+                            this.curEditPoint = EditPointType.Start;
+                        }
                         break;
                 }
             }
         };
+        //左键点击，设置通行权值
+        //或
+        //左键点击，设置起点或终点，仅支持拖动
         SearchWayPage.prototype.OnEnableEditWeight = function () {
             if (Dylan.GMapSearch.isRunning)
                 return;
             var vec2 = this.GetClickMapSpPoint();
             if (vec2) {
                 var point = Dylan.GMapSearch.GetPoint(vec2.x, vec2.y);
-                this.curSetWeight = point.GetNextWeight();
-                if (this.curSetWeight == -1) {
-                    this.curSetWeight = this.defaultWeightValue;
+                if (point == Dylan.GMapSearch.curSearch.startPoint) {
+                    this.curEditPoint = EditPointType.Start;
+                    this.mapSp.on(Laya.Event.MOUSE_MOVE, this, this.OnEditSpePoint);
                 }
-                this.OnEditWeight();
-                this.mapSp.on(Laya.Event.MOUSE_MOVE, this, this.OnEditWeight);
+                else if (point == Dylan.GMapSearch.curSearch.endPoint) {
+                    this.curEditPoint = EditPointType.End;
+                    this.mapSp.on(Laya.Event.MOUSE_MOVE, this, this.OnEditSpePoint);
+                }
+                else {
+                    this.curSetWeight = point.GetNextWeight();
+                    if (this.curSetWeight == -1) {
+                        this.curSetWeight = this.defaultWeightValue;
+                    }
+                    this.OnEditWeight();
+                    this.mapSp.on(Laya.Event.MOUSE_MOVE, this, this.OnEditWeight);
+                }
             }
         };
         SearchWayPage.prototype.OnDisableEditWeight = function () {
             Dylan.CopyVec2(this.lastEditWeightPos, this.invalidPos);
             this.mapSp.off(Laya.Event.MOUSE_MOVE, this, this.OnEditWeight);
+            this.curEditPoint = EditPointType.None;
+            this.mapSp.off(Laya.Event.MOUSE_MOVE, this, this.OnEditSpePoint);
         };
         SearchWayPage.prototype.OnEditWeight = function () {
             var vec2 = this.GetClickMapSpPoint();
@@ -228,7 +248,6 @@ var Dylan;
         };
         SearchWayPage.prototype.OnSelectCostRadioGroup = function (index) {
             this.defaultWeightValue = index + 1;
-            Dylan.log("---------------:", this.defaultWeightValue);
         };
         SearchWayPage.prototype.OnSliderChange = function (value) {
             Dylan.GMapSearch.SearchSteps(value);
@@ -295,7 +314,6 @@ var Dylan;
             this.mapSp.mouseThrough = false;
         };
         SearchWayPage.prototype.OnSearchReset = function () {
-            // this.InitDraw();
             this.Clear();
         };
         SearchWayPage.prototype.OnSearchPause = function () {
