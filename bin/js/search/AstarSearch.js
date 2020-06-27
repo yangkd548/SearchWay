@@ -18,23 +18,34 @@ var Dylan;
         function AstarSearch() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        Object.defineProperty(AstarSearch.prototype, "isOver", {
-            get: function () {
-                return false;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        AstarSearch.prototype.SearchCustomSteps = function (step) {
-            if (step === void 0) { step = 1; }
-        };
         AstarSearch.prototype.DoSearchOneStep = function () {
+            if (!this.isInit || this.isOver || this.isSucc)
+                return;
+            this.AddStep();
+            this.SetCurPoint(this.frontier.shift());
+            for (var _i = 0, _a = this.mapGraph.GetNeighbors(this.curPoint); _i < _a.length; _i++) {
+                var next = _a[_i];
+                var newCost = this.mapGraph.GetCost(this.curPoint, next);
+                if (!next.cost || newCost < next.cost) {
+                    next.cost = newCost;
+                    next.f = newCost + this.mapGraph.GetHeuristicDis(this.endPoint, next);
+                    this.AddFrontierPoint(next);
+                    if (this.isSucc) {
+                        break;
+                    }
+                }
+            }
         };
-        AstarSearch.prototype.Reset = function () {
-            _super.prototype.Reset.call(this);
+        AstarSearch.prototype.AddFrontierPoint = function (point) {
+            _super.prototype.AddFrontierPoint.call(this, point);
+            var lastPos = this.frontier.indexOf(point);
+            if (lastPos != -1) {
+                this.frontier.splice(lastPos, 1);
+            }
+            this.InsertIncArr(this.frontier, "f", point, 0, lastPos);
         };
         return AstarSearch;
-    }(Dylan.BaseSearch));
+    }(Dylan.DijkstraSearch));
     Dylan.AstarSearch = AstarSearch;
 })(Dylan || (Dylan = {}));
 //# sourceMappingURL=AstarSearch.js.map

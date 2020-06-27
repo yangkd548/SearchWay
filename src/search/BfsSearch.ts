@@ -13,7 +13,6 @@ module Dylan {
                     }
                 }
             }
-            this.EmitReDraw();
         }
         
         protected AddFrontierPoint(point: MapPoint): void {

@@ -2,6 +2,8 @@ var Dylan;
 (function (Dylan) {
     var MapPoint = /** @class */ (function () {
         function MapPoint() {
+            this._x = -1;
+            this._y = -1;
             //权值（权重）
             this.OriginWeight = 1;
             this._weight = this.OriginWeight;
@@ -56,9 +58,9 @@ var Dylan;
             configurable: true
         });
         MapPoint.prototype.SetWeight = function (weight) {
-            if (weight >= 1 && this._weight <= Infinity) {
+            if (weight >= 1 && this._weight <= Infinity && this._weight != weight) {
                 this._weight = weight;
-                Dylan.GEventMgr.Emit(MapPoint.PointCostChanged);
+                return true;
             }
         };
         MapPoint.prototype.ResetWeight = function () {
@@ -74,12 +76,58 @@ var Dylan;
             enumerable: false,
             configurable: true
         });
+        Object.defineProperty(MapPoint.prototype, "preParent", {
+            get: function () {
+                return this._preParent;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        MapPoint.prototype.SetPreParent = function () {
+            this._preParent = this.parent;
+        };
+        MapPoint.prototype.ResetPreParent = function () {
+            this._preParent = null;
+        };
         Object.defineProperty(MapPoint.prototype, "cost", {
             get: function () {
                 return this._cost;
             },
             set: function (value) {
                 this._cost = value;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(MapPoint.prototype, "preCost", {
+            get: function () {
+                return this._preCost;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        MapPoint.prototype.SetPreCost = function () {
+            this._preCost = this.cost;
+        };
+        MapPoint.prototype.ResetPreCost = function () {
+            this._preCost = 0;
+        };
+        Object.defineProperty(MapPoint.prototype, "heuristic", {
+            get: function () {
+                return this._heuristic;
+            },
+            set: function (value) {
+                this._heuristic = value;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(MapPoint.prototype, "f", {
+            get: function () {
+                return this._f;
+            },
+            set: function (value) {
+                this._f = value;
             },
             enumerable: false,
             configurable: true
@@ -133,15 +181,20 @@ var Dylan;
             enumerable: false,
             configurable: true
         });
-        MapPoint.prototype.Reset = function () {
-            this._weight = this.OriginWeight;
-            this._x = -1;
-            this._y = -1;
-            this._weight = this.OriginWeight;
+        MapPoint.prototype.Clear = function () {
+            this.cost = 0;
             this._isProcess = false;
             this._isVisited = false;
             this._parent = null;
-            this._cost = 0;
+        };
+        MapPoint.prototype.ResetBase = function () {
+            this._x = -1;
+            this._y = -1;
+            this._weight = this.OriginWeight;
+        };
+        MapPoint.prototype.Reset = function () {
+            this.Clear();
+            this.ResetBase();
         };
         //暂时没用到
         MapPoint.prototype.IsSamePos = function (other) {

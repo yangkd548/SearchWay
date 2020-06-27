@@ -25,7 +25,7 @@ var Dylan;
             this.SetCurPoint(this.frontier.shift());
             for (var _i = 0, _a = this.mapGraph.GetNeighbors(this.curPoint); _i < _a.length; _i++) {
                 var next = _a[_i];
-                var newCost = this.curPoint.cost + this.mapGraph.GetCost(this.curPoint, next);
+                var newCost = this.mapGraph.GetCost(this.curPoint, next);
                 if (!next.cost || newCost < next.cost) {
                     next.cost = newCost;
                     this.AddFrontierPoint(next);
@@ -34,7 +34,6 @@ var Dylan;
                     }
                 }
             }
-            this.EmitReDraw();
         };
         DijkstraSearch.prototype.AddFrontierPoint = function (point) {
             _super.prototype.AddFrontierPoint.call(this, point);
@@ -44,7 +43,7 @@ var Dylan;
             }
             this.InsertIncArr(this.frontier, "cost", point, 0, lastPos);
         };
-        //二分法插入对象
+        //二分法插入对象（插入对象的算法，对寻路效率的影响很大）
         DijkstraSearch.prototype.InsertIncArr = function (arr, key, input, min, max) {
             if (min === void 0) { min = -1; }
             if (max === void 0) { max = -1; }

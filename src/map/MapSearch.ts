@@ -35,76 +35,73 @@ module Dylan {
         public SetDriveMode(mode: E_DriveMode): void {
             this._driveMode = mode;
         }
-        public get driveMode(): E_DriveMode {
-            return this._driveMode;
-        }
 
         private _isPause: boolean = false;
         public get isPause(): boolean {
             return this._isPause;
         }
 
-        private _searchType: E_SearchType = E_SearchType.DFS;
-        public get searchType(): E_SearchType {
-            return this._searchType;
+        private _searchType: E_SearchType;
+        private _curSearch: BaseSearch;
+        public get curSearch():BaseSearch{
+            return this._curSearch;
         }
-        private curSearch: BaseSearch = this.SetSearchType();
-        public SetSearchType(type: E_SearchType = this.searchType): BaseSearch {
-            if (this.curSearch) {
-                this.curSearch.enable = false;
+        public SetSearchType(type: E_SearchType): BaseSearch {
+            if (this._curSearch) {
+                this._curSearch.enable = false;
                 GEventMgr.Emit(MapSearch.SearchReset);
             }
             switch (type) {
                 case E_SearchType.DFS:
-                    this.curSearch = this.DFS;
+                    this._curSearch = this.DFS;
                     break;
                 case E_SearchType.BFS:
-                    this.curSearch = this.BFS;
+                    this._curSearch = this.BFS;
                     break;
                 case E_SearchType.DIJKSTRA:
-                    this.curSearch = this.DIJKSTRA;
+                    this._curSearch = this.DIJKSTRA;
                     break;
                 case E_SearchType.GBFS:
-                    this.curSearch = this.GBFS;
+                    this._curSearch = this.GBFS;
                     break;
                 case E_SearchType.Astar:
-                    this.curSearch = this.Astar;
+                    this._curSearch = this.Astar;
                     break;
                 case E_SearchType.Bstar:
-                    this.curSearch = this.Bstar;
+                    this._curSearch = this.Bstar;
                     break;
             }
-            this.curSearch.enable = true;
-            return this.curSearch;
+            this._curSearch.enable = true;
+            return this._curSearch;
         }
 
         public get isInit(): boolean {
-            return this.curSearch.isInit;
+            return this._curSearch.isInit;
         }
 
         public get isRunning(): boolean {
-            return this.curSearch.isRunning;
+            return this._curSearch.isRunning;
         }
 
         public SetMap(width: number, height: number): void {
-            this.curSearch.SetMap(width, height);
+            this._curSearch.SetMap(width, height);
         }
 
         public Reset(): void {
-            this.curSearch.Reset();
+            this._curSearch.Reset();
             this.ClearDrive();
         }
 
         public SetStartPoint(fromX: number, fromY: number): void {
-            this.curSearch.SetStart(fromX, fromY);
+            this._curSearch.SetStart(fromX, fromY);
         }
 
         public SetEndPoint(toX: number, toY: number): void {
-            this.curSearch.SetEndPoint(toX, toY);
+            this._curSearch.SetEndPoint(toX, toY);
         }
 
         public GetPoint(x: number, y: number): MapPoint {
-            return this.curSearch.mapGraph.GetPoint(x, y);
+            return this._curSearch.mapGraph.GetPoint(x, y);
         }
 
         public SwitchStart(): void {
@@ -136,17 +133,16 @@ module Dylan {
         private Finish(): void {
             this.Pause();
             while (this.isRunning) {
-                this.curSearch.SearchCustomSteps();
+                this.DoSearch();
             }
-            GEventMgr.Emit(MapSearch.SearchStop);
         }
 
         public SearchSteps(step: number): void {
-            this.curSearch.SearchSteps(step);
+            this._curSearch.SearchSteps(step);
         }
 
         private DoStart(): boolean {
-            if(this.curSearch.Start()){
+            if(this._curSearch.Start()){
                 GEventMgr.Emit(MapSearch.SearchStart);
                 return true;
             }
@@ -191,27 +187,23 @@ module Dylan {
 
         private DriveSearch(): void {
             this.DoSearch();
-            this.curSearch.AddDriveTimes();
-            if (!this.isRunning) {
-                Laya.timer.clear(this, this.DriveSearch);
-                GEventMgr.Emit(MapSearch.SearchStop);
-            }
+            this._curSearch.AddDriveTimes();
         }
 
         private ClickSearch(): void {
             this.DoSearch();
+        }
+
+        private DoSearch(): void {
+            this._curSearch.SearchCustomSteps();
             if (!this.isRunning) {
-                Laya.stage.off(Laya.Event.CLICK, this, this.ClickSearch);
+                this.ClearDrive();
                 GEventMgr.Emit(MapSearch.SearchStop);
             }
         }
 
-        private DoSearch(): void {
-            this.curSearch.SearchCustomSteps();
-        }
-
         public SetPointWeight(x: number, y: number, weight: number) {
-            this.curSearch.SetPointWeight(x, y, weight);
+            this._curSearch.SetPointWeight(x, y, weight);
         }
     }
 }

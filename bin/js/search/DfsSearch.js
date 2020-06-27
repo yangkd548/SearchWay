@@ -60,7 +60,6 @@ var Dylan;
             if (!this.isSucc && !hasUnvisited) {
                 this.Recall();
             }
-            this.EmitReDraw();
         };
         DfsSearch.prototype.AddFrontierPoint = function (point) {
             _super.prototype.AddFrontierPoint.call(this, point);

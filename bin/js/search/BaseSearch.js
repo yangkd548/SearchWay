@@ -10,6 +10,8 @@ var Dylan;
     })(E_SearchStep = Dylan.E_SearchStep || (Dylan.E_SearchStep = {}));
     var BaseSearch = /** @class */ (function () {
         function BaseSearch() {
+            this._isPreprocessInfo = false;
+            this._curPreprocessInfo = false;
             this._isStarted = false;
             this._isSucc = false;
             this._step = 0;
@@ -26,6 +28,41 @@ var Dylan;
             enumerable: false,
             configurable: true
         });
+        BaseSearch.prototype.EmitReDraw = function () {
+            Dylan.GEventMgr.Emit(BaseSearch.SearchReDraw, this);
+        };
+        BaseSearch.prototype.SetMap = function (width, height) {
+            this.mapGraph.SetMap(width, height);
+            this.EmitReDraw();
+        };
+        Object.defineProperty(BaseSearch.prototype, "isPreprocessInfo", {
+            get: function () {
+                return this._isPreprocessInfo;
+            },
+            set: function (value) {
+                this._isPreprocessInfo = value;
+                if (value) {
+                    this.DoPreprocessInfo();
+                }
+                else {
+                    this.mapGraph.ResetFinialCost();
+                }
+            },
+            enumerable: false,
+            configurable: true
+        });
+        //尝试 不考虑终点，遍历地图
+        BaseSearch.prototype.DoPreprocessInfo = function () {
+            if (this._isPreprocessInfo) {
+                this._curPreprocessInfo = true;
+                this.Start();
+                while (this.isRunning) {
+                    this.DoSearchOneStep();
+                }
+                this.mapGraph.SetFinalCost();
+                this.Clear();
+            }
+        };
         Object.defineProperty(BaseSearch.prototype, "startPoint", {
             get: function () {
                 return this.mapGraph.startPoint;
@@ -35,6 +72,7 @@ var Dylan;
         });
         BaseSearch.prototype.SetStart = function (fromX, fromY) {
             this.mapGraph.SetStartPoint(fromX, fromY);
+            this.DoPreprocessInfo();
             this.EmitReDraw();
         };
         Object.defineProperty(BaseSearch.prototype, "endPoint", {
@@ -130,14 +168,6 @@ var Dylan;
             enumerable: false,
             configurable: true
         });
-        BaseSearch.prototype.SetMap = function (width, height, reset) {
-            if (reset === void 0) { reset = false; }
-            this.mapGraph.SetMap(width, height, reset);
-            this.EmitReDraw();
-        };
-        BaseSearch.prototype.EmitReDraw = function () {
-            Dylan.GEventMgr.Emit(BaseSearch.SearchReDraw, this);
-        };
         BaseSearch.prototype.Start = function () {
             if (!this.isRunning && this.isInit) {
                 this._isStarted = true;
@@ -165,6 +195,7 @@ var Dylan;
             if (this.isOver)
                 return true;
             this.DoSearchOneStep();
+            this.EmitReDraw();
             if (this.isOver)
                 return true;
             return false;
@@ -175,7 +206,6 @@ var Dylan;
             var wayPoint = this.endPoint;
             while (wayPoint.parent && wayPoint != this.startPoint) {
                 if (wayPoint == point) {
-                    Dylan.log("绘制 路径：", point.key);
                     return true;
                 }
                 else {
@@ -188,16 +218,11 @@ var Dylan;
             if (point != this.startPoint) {
                 point.parent = this._curPoint;
             }
-            if (point == this.endPoint) {
-                Dylan.log("111111111----------");
-            }
             point.SetIsProcess();
             this.CheckSucc(point);
-            // if (!this.isSucc) {
-            // }
         };
         BaseSearch.prototype.CheckSucc = function (point) {
-            if (this._isSucc)
+            if (this._curPreprocessInfo || this._isSucc)
                 return;
             this._isSucc = this.mapGraph.endPoint == point;
         };
@@ -206,15 +231,23 @@ var Dylan;
             if (point) {
                 if (point == this.startPoint || point == this.endPoint)
                     return;
-                point.SetWeight(weight);
+                if (point.SetWeight(weight)) {
+                    this.DoPreprocessInfo();
+                    this.EmitReDraw();
+                }
             }
         };
-        BaseSearch.prototype.Reset = function () {
+        BaseSearch.prototype.Clear = function () {
+            this._curPreprocessInfo = false;
             this._step = 0;
             this._maxStep = 0;
             this._isSucc = false;
             this._curPoint = null;
             this.driveTimes = 0;
+            this.mapGraph.Clear();
+        };
+        BaseSearch.prototype.Reset = function () {
+            this.Clear();
             this.mapGraph.Reset();
             this.EmitReDraw();
         };

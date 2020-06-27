@@ -6,7 +6,7 @@ module Dylan {
             this.AddStep();
             this.SetCurPoint(this.frontier.shift());
             for (let next of this.mapGraph.GetNeighbors(this.curPoint)) {
-                let newCost = this.curPoint.cost + this.mapGraph.GetCost(this.curPoint, next);
+                let newCost = this.mapGraph.GetCost(this.curPoint, next);
                 if (!next.cost || newCost < next.cost) {
                     next.cost = newCost;
                     this.AddFrontierPoint(next);
@@ -15,7 +15,6 @@ module Dylan {
                     }
                 }
             }
-            this.EmitReDraw();
         }
 
         protected AddFrontierPoint(point: MapPoint): void {
@@ -27,8 +26,8 @@ module Dylan {
             this.InsertIncArr(this.frontier, "cost", point, 0, lastPos);
         }
 
-        //二分法插入对象
-        private InsertIncArr(arr: any[], key: string, input: any, min: number = -1, max: number = -1): void {
+        //二分法插入对象（插入对象的算法，对寻路效率的影响很大）
+        protected InsertIncArr(arr: any[], key: string, input: any, min: number = -1, max: number = -1): void {
             if (min >= arr.length || min < 0) min = 0;
             if (max >= arr.length || max < 0) max = arr.length - 1;
             if (min > max) {

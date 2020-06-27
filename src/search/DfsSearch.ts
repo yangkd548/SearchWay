@@ -38,7 +38,6 @@ module Dylan {
             if (!this.isSucc && !hasUnvisited) {
                 this.Recall();
             }
-            this.EmitReDraw();
         }
 
         protected AddFrontierPoint(point: MapPoint): void {

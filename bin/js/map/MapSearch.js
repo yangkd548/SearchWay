@@ -25,19 +25,10 @@ var Dylan;
             //驱动方式：0-间隔帧自动驱动；1-鼠标点击驱动
             this._driveMode = E_DriveMode.Auto;
             this._isPause = false;
-            this._searchType = E_SearchType.DFS;
-            this.curSearch = this.SetSearchType();
         }
         MapSearch.prototype.SetDriveMode = function (mode) {
             this._driveMode = mode;
         };
-        Object.defineProperty(MapSearch.prototype, "driveMode", {
-            get: function () {
-                return this._driveMode;
-            },
-            enumerable: false,
-            configurable: true
-        });
         Object.defineProperty(MapSearch.prototype, "isPause", {
             get: function () {
                 return this._isPause;
@@ -45,71 +36,70 @@ var Dylan;
             enumerable: false,
             configurable: true
         });
-        Object.defineProperty(MapSearch.prototype, "searchType", {
+        Object.defineProperty(MapSearch.prototype, "curSearch", {
             get: function () {
-                return this._searchType;
+                return this._curSearch;
             },
             enumerable: false,
             configurable: true
         });
         MapSearch.prototype.SetSearchType = function (type) {
-            if (type === void 0) { type = this.searchType; }
-            if (this.curSearch) {
-                this.curSearch.enable = false;
+            if (this._curSearch) {
+                this._curSearch.enable = false;
                 Dylan.GEventMgr.Emit(MapSearch.SearchReset);
             }
             switch (type) {
                 case E_SearchType.DFS:
-                    this.curSearch = this.DFS;
+                    this._curSearch = this.DFS;
                     break;
                 case E_SearchType.BFS:
-                    this.curSearch = this.BFS;
+                    this._curSearch = this.BFS;
                     break;
                 case E_SearchType.DIJKSTRA:
-                    this.curSearch = this.DIJKSTRA;
+                    this._curSearch = this.DIJKSTRA;
                     break;
                 case E_SearchType.GBFS:
-                    this.curSearch = this.GBFS;
+                    this._curSearch = this.GBFS;
                     break;
                 case E_SearchType.Astar:
-                    this.curSearch = this.Astar;
+                    this._curSearch = this.Astar;
                     break;
                 case E_SearchType.Bstar:
-                    this.curSearch = this.Bstar;
+                    this._curSearch = this.Bstar;
                     break;
             }
-            this.curSearch.enable = true;
-            return this.curSearch;
+            this._curSearch.enable = true;
+            return this._curSearch;
         };
         Object.defineProperty(MapSearch.prototype, "isInit", {
             get: function () {
-                return this.curSearch.isInit;
+                return this._curSearch.isInit;
             },
             enumerable: false,
             configurable: true
         });
         Object.defineProperty(MapSearch.prototype, "isRunning", {
             get: function () {
-                return this.curSearch.isRunning;
+                return this._curSearch.isRunning;
             },
             enumerable: false,
             configurable: true
         });
         MapSearch.prototype.SetMap = function (width, height) {
-            this.curSearch.SetMap(width, height);
+            this._curSearch.SetMap(width, height);
         };
         MapSearch.prototype.Reset = function () {
-            this.curSearch.Reset();
+            this._curSearch.Reset();
             this.ClearDrive();
         };
         MapSearch.prototype.SetStartPoint = function (fromX, fromY) {
-            this.curSearch.SetStart(fromX, fromY);
+            this._curSearch.SetStart(fromX, fromY);
         };
         MapSearch.prototype.SetEndPoint = function (toX, toY) {
-            this.curSearch.SetEndPoint(toX, toY);
+            this._curSearch.SetEndPoint(toX, toY);
         };
         MapSearch.prototype.GetPoint = function (x, y) {
-            return this.curSearch.mapGraph.GetPoint(x, y);
+            return this._curSearch.mapGraph.GetPoint(x, y);
         };
         MapSearch.prototype.SwitchStart = function () {
             if (this.isRunning) {
@@ -137,15 +127,14 @@ var Dylan;
         MapSearch.prototype.Finish = function () {
             this.Pause();
             while (this.isRunning) {
-                this.curSearch.SearchCustomSteps();
+                this.DoSearch();
             }
-            Dylan.GEventMgr.Emit(MapSearch.SearchStop);
         };
         MapSearch.prototype.SearchSteps = function (step) {
-            this.curSearch.SearchSteps(step);
+            this._curSearch.SearchSteps(step);
         };
         MapSearch.prototype.DoStart = function () {
-            if (this.curSearch.Start()) {
+            if (this._curSearch.Start()) {
                 Dylan.GEventMgr.Emit(MapSearch.SearchStart);
                 return true;
             }
@@ -187,24 +176,20 @@ var Dylan;
         };
         MapSearch.prototype.DriveSearch = function () {
             this.DoSearch();
-            this.curSearch.AddDriveTimes();
-            if (!this.isRunning) {
-                Laya.timer.clear(this, this.DriveSearch);
-                Dylan.GEventMgr.Emit(MapSearch.SearchStop);
-            }
+            this._curSearch.AddDriveTimes();
         };
         MapSearch.prototype.ClickSearch = function () {
             this.DoSearch();
+        };
+        MapSearch.prototype.DoSearch = function () {
+            this._curSearch.SearchCustomSteps();
             if (!this.isRunning) {
-                Laya.stage.off(Laya.Event.CLICK, this, this.ClickSearch);
+                this.ClearDrive();
                 Dylan.GEventMgr.Emit(MapSearch.SearchStop);
             }
         };
-        MapSearch.prototype.DoSearch = function () {
-            this.curSearch.SearchCustomSteps();
-        };
         MapSearch.prototype.SetPointWeight = function (x, y, weight) {
-            this.curSearch.SetPointWeight(x, y, weight);
+            this._curSearch.SetPointWeight(x, y, weight);
         };
         MapSearch.SearchStart = "SearchStart";
         MapSearch.SearchStop = "SearchStop";

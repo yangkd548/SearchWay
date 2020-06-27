@@ -41,10 +41,12 @@ var Dylan;
             _this.lastEditWeightPoint = new Laya.Vector2();
             _this.curEditWeightPoint = new Laya.Vector2();
             _this.curEditPoint = EditPointType.None;
+            _this.isShowNeighbors = false;
             //设置页面宽度，才能保证大页面所有区域都响应鼠标事件
             _this.width = Laya.stage.width;
             _this.height = Laya.stage.height;
             _this.functionTab.selectHandler = new Handler(_this, _this.OnSelectFunctionTab, [_this.functionTab]);
+            //基础 设置页
             _this.mapWidth.on(Laya.Event.ENTER, _this, _this.OnSetMapRange, [_this.mapWidth]);
             _this.mapHeight.on(Laya.Event.ENTER, _this, _this.OnSetMapRange, [_this.mapHeight]);
             _this.startX.on(Laya.Event.ENTER, _this, _this.OnSetMapStartPoint, [_this.startX]);
@@ -62,18 +64,26 @@ var Dylan;
             _this.endX.on(Laya.Event.FOCUS, _this, _this.OnSetEditEnd, [_this.endX]);
             _this.endY.on(Laya.Event.FOCUS, _this, _this.OnSetEditEnd, [_this.endY]);
             _this.mapSp.on(Laya.Event.RIGHT_CLICK, _this, _this.OnEditSpePoint);
+            //通行成本 设置页
             _this.mapSp.on(Laya.Event.MOUSE_DOWN, _this, _this.OnEnableEditWeight);
             _this.mapSp.on(Laya.Event.MOUSE_UP, _this, _this.OnDisableEditWeight);
             _this.costRadioGroup.selectHandler = new Laya.Handler(_this, _this.OnSelectCostRadioGroup);
             _this.resetWeightBtn.on(Laya.Event.CLICK, _this, _this.OnRestWeightData);
-            _this.slider.changeHandler = new Laya.Handler(_this, _this.OnSliderChange);
-            _this.scroll.changeHandler = new Laya.Handler(_this, _this.OnSliderChange);
+            //运行 设置页
             _this.driveCombo.selectHandler = new Handler(_this, _this.OnSelectDriveCombo, [_this.driveCombo]);
             _this.searchCombo.selectHandler = new Handler(_this, _this.OnSelectSearchCombo, [_this.searchCombo]);
             _this.stepCombo.selectHandler = new Handler(_this, _this.OnSelectStepCombo, [_this.stepCombo]);
+            _this.isPreprocessCheck.clickHandler = new Handler(_this, _this.OnSetPreprocessCheck, [_this.isPreprocessCheck]);
+            _this.showDirCheck.clickHandler = new Handler(_this, _this.OnShowDirCheck, [_this.showDirCheck]);
+            _this.showCostCheck.clickHandler = new Handler(_this, _this.OnShowCostCheck, [_this.showCostCheck]);
+            _this.showNeighborsCheck.clickHandler = new Handler(_this, _this.OnShowNeighborsCheck, [_this.showNeighborsCheck]);
             _this.resetBtn.on(Laya.Event.CLICK, _this, _this.OnResetMap);
             _this.startBtn.on(Laya.Event.CLICK, _this, _this.OnSwitchStart);
             _this.pauseBtn.on(Laya.Event.CLICK, _this, _this.OnSwitchPause);
+            //长显示组件
+            _this.slider.changeHandler = new Laya.Handler(_this, _this.OnSliderChange);
+            _this.scroll.changeHandler = new Laya.Handler(_this, _this.OnSliderChange);
+            //运行反馈 监听
             Dylan.GEventMgr.On(Dylan.MapSearch.SearchStart, _this, _this.OnSearchStart);
             Dylan.GEventMgr.On(Dylan.MapSearch.SearchStop, _this, _this.OnSearchStop);
             Dylan.GEventMgr.On(Dylan.MapSearch.SearchReset, _this, _this.OnSearchReset);
@@ -83,9 +93,11 @@ var Dylan;
             return _this;
         }
         SearchWayPage.prototype.OnAddStage = function (args) {
+            //默认显示
             this.functionTab.selectedIndex = 2;
-            this.driveCombo.selectedIndex = Dylan.GMapSearch.driveMode;
-            this.searchCombo.selectedIndex = Dylan.GMapSearch.searchType;
+            //由此页面，设置搜索配置（如果多个页面的话，还是得MapSearch类提供获取当前配置的public接口）
+            this.driveCombo.selectedIndex = Dylan.E_DriveMode.Auto;
+            this.searchCombo.selectedIndex = Dylan.E_SearchType.DIJKSTRA;
             this.startBtn.text.text = "开始";
             this.startBtn.disabled = true;
             this.pauseBtn.text.text = "暂停";
@@ -182,7 +194,7 @@ var Dylan;
                 if (this.curSetWeight == -1) {
                     this.curSetWeight = this.defaultWeightValue;
                 }
-                Dylan.log("重置 权值-----：", this.curSetWeight);
+                Dylan.log("修改 当前使用 的设置权值-----：", this.curSetWeight);
                 this.OnEditWeight();
                 this.mapSp.on(Laya.Event.MOUSE_MOVE, this, this.OnEditWeight);
             }
@@ -236,6 +248,19 @@ var Dylan;
         SearchWayPage.prototype.OnSelectStepCombo = function (cb) {
             // GMapSearch.SetSearchType(cb.selectedIndex);
         };
+        SearchWayPage.prototype.OnSetPreprocessCheck = function () {
+            Dylan.GMapSearch.curSearch.isPreprocessInfo = this.isPreprocessCheck.selected;
+            this.ReDrawMap();
+        };
+        SearchWayPage.prototype.OnShowDirCheck = function () {
+            this.ReDrawMap();
+        };
+        SearchWayPage.prototype.OnShowCostCheck = function () {
+            this.ReDrawMap();
+        };
+        SearchWayPage.prototype.OnShowNeighborsCheck = function () {
+            this.isShowNeighbors;
+        };
         SearchWayPage.prototype.OnResetMap = function () {
             this.InitDraw();
             Dylan.GTipsMgr.Show("设置完成！", 1);
@@ -270,34 +295,35 @@ var Dylan;
         SearchWayPage.prototype.OnSearchResume = function () {
             this.pauseBtn.text.text = "暂停";
         };
-        SearchWayPage.prototype.ReDrawMap = function (search) {
+        SearchWayPage.prototype.ReDrawMap = function () {
             this.mapSp.graphics.clear();
+            var search = Dylan.GMapSearch.curSearch;
             for (var x = 0; x < search.mapGraph.width; x++) {
                 var curX = x * this.GridWidth;
                 for (var y = 0; y < search.mapGraph.height; y++) {
                     var curY = y * this.GridHeight;
-                    var temp = search.mapGraph.GetPoint(x, y);
+                    var point = search.mapGraph.GetPoint(x, y);
                     var curColor = void 0;
-                    if (temp == search.startPoint) {
+                    if (point == search.startPoint) {
                         curColor = this.GridColorStart;
                     }
-                    else if (temp == search.endPoint) {
+                    else if (point == search.endPoint) {
                         curColor = this.GridColorEnd;
                     }
-                    else if (search.IsWayPoint(temp)) {
+                    else if (search.IsWayPoint(point)) {
                         curColor = this.GridColorWay;
                     }
-                    else if (temp == search.curPoint) {
+                    else if (point == search.curPoint) {
                         curColor = this.GridColorCur;
                     }
-                    else if (temp.isProcess) {
+                    else if (point.isProcess) {
                         curColor = this.GridColorInQueue;
                     }
-                    else if (temp.isVisited) {
+                    else if (point.isVisited) {
                         curColor = this.GridColorVisited;
                     }
                     else {
-                        switch (temp.weight) {
+                        switch (point.weight) {
                             case 1:
                                 curColor = this.GridColorNoVisited_1;
                                 break;
@@ -309,7 +335,15 @@ var Dylan;
                                 break;
                         }
                     }
-                    this.mapSp.graphics.drawRect(curX + this.LineWidth, curY + this.LineWidth, this.GridWidth - this.LineWidth * 2, this.GridHeight - this.LineWidth * 2, curColor);
+                    var gx = curX + this.LineWidth;
+                    var gy = curY + this.LineWidth;
+                    this.mapSp.graphics.drawRect(gx, gy, this.GridWidth - this.LineWidth * 2, this.GridHeight - this.LineWidth * 2, curColor);
+                    if (this.showCostCheck.selected) {
+                        var cost = search.isPreprocessInfo ? point.preCost : point.cost;
+                        if (cost) {
+                            this.mapSp.graphics.fillText(cost.toString(), curX + this.GridWidth / 2, curY + this.GridHeight / 4, "10px Arial", "#92CCD8", "center");
+                        }
+                    }
                 }
             }
         };

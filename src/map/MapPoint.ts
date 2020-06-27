@@ -3,12 +3,12 @@ module Dylan {
     export class MapPoint {
         public static readonly PointCostChanged: string = "PointCostChanged";
 
-        private _x: number;
+        private _x: number = -1;
         public get x(): number {
             return this._x;
         }
 
-        private _y: number;
+        private _y: number = -1;
         public get y(): number {
             return this._y;
         }
@@ -37,10 +37,10 @@ module Dylan {
         public get weight(): number {
             return this._weight;
         }
-        public SetWeight(weight: number): void {
-            if (weight >= 1 && this._weight <= Infinity) {
+        public SetWeight(weight: number): boolean {
+            if (weight >= 1 && this._weight <= Infinity && this._weight!=weight) {
                 this._weight = weight;
-                GEventMgr.Emit(MapPoint.PointCostChanged);
+                return true;
             }
         }
 
@@ -56,12 +56,51 @@ module Dylan {
             return this._parent;
         }
 
+        private _preParent:MapPoint;
+        public get preParent():MapPoint{
+            return this._preParent
+        }
+        public SetPreParent():void{
+            this._preParent = this.parent;
+        }
+        public ResetPreParent():void{
+            this._preParent = null;
+        }
+
         private _cost: number;
         public get cost(): number {
             return this._cost;
         }
         public set cost(value:number){
             this._cost = value;
+        }
+
+        private _preCost:number;
+        public get preCost():number{
+            return this._preCost;
+        }
+        public SetPreCost():void{
+            this._preCost = this.cost;
+        }
+        public ResetPreCost():void{
+            this._preCost = 0;
+        }
+
+        //启发式，预期值（预计剩余路程）
+        private _heuristic:number;
+        public get heuristic():number{
+            return this._heuristic;
+        }
+        public set heuristic(value:number){
+            this._heuristic = value;
+        }
+
+        private _f:number;
+        public get f():number{
+            return this._f;
+        }
+        public set f(value:number){
+            this._f = value;
         }
 
         public GetNextWeight(): number {
@@ -110,15 +149,22 @@ module Dylan {
             return !this._isVisited && !this._isProcess;
         }
 
-        public Reset(): void {
-            this._weight = this.OriginWeight;
-            this._x = -1;
-            this._y = -1;
-            this._weight = this.OriginWeight;
+        public Clear():void{
+            this.cost = 0;
             this._isProcess = false;
             this._isVisited = false;
             this._parent = null;
-            this._cost = 0;
+        }
+
+        private ResetBase():void{
+            this._x = -1;
+            this._y = -1;
+            this._weight = this.OriginWeight;
+        }
+
+        public Reset(): void {
+            this.Clear();
+            this.ResetBase();
         }
 
         //暂时没用到

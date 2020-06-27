@@ -1,8 +1,8 @@
 {
     "x":0,
     "type":"View",
-    "selectedBox":125,
-    "selecteID":126,
+    "selectedBox":57,
+    "selecteID":130,
     "props":{"width":600,"sceneColor":"#ffffff","height":400},
     "nodeParent":-1,
     "label":"View",
@@ -467,7 +467,7 @@
                     "child":[
                         ]
                 }],
-            "$HIDDEN":false
+            "$HIDDEN":true
         },
         {
             "x":15,
@@ -475,13 +475,14 @@
             "props":{"y":120,"x":480,"var":"testBox"},
             "nodeParent":1,
             "label":"Box(testBox)",
-            "isOpen":false,
+            "isOpen":true,
             "isDirectory":true,
             "isAniNode":true,
             "hasChild":true,
             "compId":57,
             "child":[
                 {
+                    "x":30,
                     "type":"Box",
                     "props":{"width":240,"height":24},
                     "nodeParent":57,
@@ -519,6 +520,7 @@
                     "$HIDDEN":false
                 },
                 {
+                    "x":30,
                     "type":"Box",
                     "props":{"y":45},
                     "nodeParent":57,
@@ -556,6 +558,7 @@
                         }]
                 },
                 {
+                    "x":30,
                     "type":"Box",
                     "props":{"y":88},
                     "nodeParent":57,
@@ -592,18 +595,63 @@
                         }]
                 },
                 {
-                    "type":"Button",
-                    "props":{"y":189,"x":83,"width":100,"var":"resetBtn","skin":"comp/button.png","sizeGrid":"4,4,4,4","labelColors":"#AABB00","label":"重置地图","height":37},
+                    "x":30,
+                    "type":"CheckBox",
+                    "props":{"y":128,"x":118,"width":118,"var":"showCostCheck","skin":"comp/checkbox.png","labelPadding":"0,0,0,5","label":"显示消耗","height":18},
                     "nodeParent":57,
-                    "label":"Button(resetBtn)",
+                    "label":"CheckBox(showCostCheck)",
+                    "isOpen":true,
                     "isDirectory":false,
                     "isAniNode":true,
                     "hasChild":false,
-                    "compId":54,
+                    "compId":131,
+                    "child":[
+                        ],
+                    "$HIDDEN":false
+                },
+                {
+                    "x":30,
+                    "type":"CheckBox",
+                    "props":{"y":128,"x":2,"width":118,"var":"showDirCheck","skin":"comp/checkbox.png","labelPadding":"0,0,0,5","label":"显示指向","height":18},
+                    "nodeParent":57,
+                    "label":"CheckBox(showDirCheck)",
+                    "isOpen":true,
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":129,
                     "child":[
                         ]
                 },
                 {
+                    "x":30,
+                    "type":"CheckBox",
+                    "props":{"y":152,"x":22,"var":"isPreprocessCheck","skin":"comp/checkbox.png","labelPadding":"0,0,0,5","label":"预处理地图信息  (否则：遍历时计算)"},
+                    "nodeParent":57,
+                    "label":"CheckBox(isPreprocessCheck)",
+                    "isOpen":true,
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":130,
+                    "child":[
+                        ]
+                },
+                {
+                    "x":30,
+                    "type":"CheckBox",
+                    "props":{"y":203,"x":2,"var":"showNeighborsCheck","skin":"comp/checkbox.png","labelPadding":"0,0,0,5","label":"显示相邻格子"},
+                    "nodeParent":57,
+                    "label":"CheckBox(showNeighborsCheck)",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":133,
+                    "child":[
+                        ]
+                },
+                {
+                    "x":30,
                     "type":"Button",
                     "props":{"y":268,"x":26,"width":100,"var":"startBtn","skin":"comp/button.png","sizeGrid":"4,4,4,4","label":"停止","height":37},
                     "nodeParent":57,
@@ -616,6 +664,7 @@
                         ]
                 },
                 {
+                    "x":30,
                     "type":"Button",
                     "props":{"y":268,"x":147,"width":100,"var":"pauseBtn","skin":"comp/button.png","sizeGrid":"4,4,4,4","label":"暂停","height":37},
                     "nodeParent":57,
@@ -626,8 +675,21 @@
                     "compId":55,
                     "child":[
                         ]
+                },
+                {
+                    "x":30,
+                    "type":"Button",
+                    "props":{"y":325,"x":82,"width":100,"var":"resetBtn","skin":"comp/button.png","sizeGrid":"4,4,4,4","labelColors":"#AABB00","label":"重置地图","height":37},
+                    "nodeParent":57,
+                    "label":"Button(resetBtn)",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":54,
+                    "child":[
+                        ]
                 }],
-            "$HIDDEN":true
+            "$HIDDEN":false
         }],
     "animations":[
         {

@@ -16,11 +16,47 @@ module Dylan {
             return BaseSearch._mapGraph;
         }
 
+        private EmitReDraw(): void {
+            GEventMgr.Emit(BaseSearch.SearchReDraw, this);
+        }
+
+        public SetMap(width: number, height: number): void {
+            this.mapGraph.SetMap(width, height);
+            this.EmitReDraw();
+        }
+
+        private _isPreprocessInfo: boolean = false;
+        public get isPreprocessInfo(): boolean {
+            return this._isPreprocessInfo;
+        }
+        public set isPreprocessInfo(value: boolean) {
+            this._isPreprocessInfo = value;
+            if(value){
+                this.DoPreprocessInfo();
+            }
+            else{
+                this.mapGraph.ResetFinialCost();
+            }
+        }
+        private _curPreprocessInfo: boolean = false;
+        //尝试 不考虑终点，遍历地图
+        private DoPreprocessInfo(): void {
+            if (this._isPreprocessInfo) {
+                this._curPreprocessInfo = true;
+                this.Start();
+                while (this.isRunning) {
+                    this.DoSearchOneStep();
+                }
+                this.mapGraph.SetFinalCost();
+                this.Clear();
+            }
+        }
         public get startPoint(): MapPoint {
             return this.mapGraph.startPoint;
         }
         public SetStart(fromX: number, fromY: number): void {
             this.mapGraph.SetStartPoint(fromX, fromY);
+            this.DoPreprocessInfo();
             this.EmitReDraw();
         }
 
@@ -106,15 +142,6 @@ module Dylan {
             }
         }
 
-        public SetMap(width: number, height: number, reset: boolean = false): void {
-            this.mapGraph.SetMap(width, height, reset);
-            this.EmitReDraw();
-        }
-
-        protected EmitReDraw(): void {
-            GEventMgr.Emit(BaseSearch.SearchReDraw, this);
-        }
-
         public Start(): boolean {
             if (!this.isRunning && this.isInit) {
                 this._isStarted = true;
@@ -145,6 +172,7 @@ module Dylan {
             this.Start();
             if (this.isOver) return true;
             this.DoSearchOneStep();
+            this.EmitReDraw();
             if (this.isOver) return true;
             return false;
         }
@@ -156,7 +184,6 @@ module Dylan {
             let wayPoint = this.endPoint;
             while (wayPoint.parent && wayPoint != this.startPoint) {
                 if (wayPoint == point) {
-                    log("绘制 路径：", point.key);
                     return true;
                 }
                 else {
@@ -170,17 +197,12 @@ module Dylan {
             if (point != this.startPoint) {
                 point.parent = this._curPoint;
             }
-            if(point == this.endPoint){
-                log("111111111----------");
-            }
             point.SetIsProcess();
             this.CheckSucc(point);
-            // if (!this.isSucc) {
-            // }
         }
 
         private CheckSucc(point: MapPoint): void {
-            if (this._isSucc) return;
+            if (this._curPreprocessInfo || this._isSucc) return;
             this._isSucc = this.mapGraph.endPoint == point;
         }
 
@@ -188,16 +210,25 @@ module Dylan {
             let point = this.mapGraph.GetPoint(x, y);
             if (point) {
                 if (point == this.startPoint || point == this.endPoint) return;
-                point.SetWeight(weight);
+                if (point.SetWeight(weight)) {
+                    this.DoPreprocessInfo();
+                    this.EmitReDraw();
+                }
             }
         }
 
-        public Reset(): void {
+        private Clear():void{
+            this._curPreprocessInfo = false;
             this._step = 0;
             this._maxStep = 0;
             this._isSucc = false;
             this._curPoint = null;
             this.driveTimes = 0;
+            this.mapGraph.Clear();
+        }
+
+        public Reset(): void {
+            this.Clear();
             this.mapGraph.Reset();
             this.EmitReDraw();
         }

@@ -32,7 +32,6 @@ var Dylan;
                     }
                 }
             }
-            this.EmitReDraw();
         };
         BfsSearch.prototype.AddFrontierPoint = function (point) {
             _super.prototype.AddFrontierPoint.call(this, point);
