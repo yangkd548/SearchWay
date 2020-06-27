@@ -4,7 +4,6 @@ var Dylan;
         function MapGraph() {
             this.grids = [];
             this.clearPointHandler = new Laya.Handler(this, function (point) { point.Clear(); }, null, false);
-            this.resetPointHandler = new Laya.Handler(this, function (point) { point.Reset(); }, null, false);
         }
         Object.defineProperty(MapGraph.prototype, "width", {
             get: function () {
@@ -46,7 +45,7 @@ var Dylan;
             if (formatHandler === void 0) { formatHandler = null; }
             var needReset = formatHandler || this._width != width || this._height != height;
             if (needReset && !formatHandler)
-                formatHandler = this.resetPointHandler;
+                formatHandler = this.clearPointHandler;
             this._width = width;
             this._height = height;
             for (var x = 0; x < width; x++) {
@@ -54,20 +53,23 @@ var Dylan;
                     this.grids.push([]);
                 }
                 for (var y = 0; y < height; y++) {
-                    this.grids[x][y] = this.grids[x][y] || new Dylan.MapPoint();
-                    if (needReset) {
-                        formatHandler.runWith(this.grids[x][y]);
+                    var point = this.GetPoint(x, y);
+                    if (!point) {
+                        point = this.grids[x][y] = new Dylan.MapPoint(this, x, y);
                     }
-                    this.grids[x][y].SetValue(this, x, y);
+                    if (needReset) {
+                        formatHandler.runWith(point);
+                    }
                 }
             }
         };
         MapGraph.prototype.Clear = function () {
             this.SetMap(this.width, this.height, this.clearPointHandler);
         };
-        MapGraph.prototype.Reset = function () {
-            this.SetMap(this.width, this.height, this.resetPointHandler);
-        };
+        // private resetPointHandler = new Laya.Handler(this, (point: MapPoint) => { point.Reset(); }, null, false);
+        // public Reset(): void {
+        //     this.SetMap(this.width, this.height, this.resetPointHandler);
+        // }
         MapGraph.prototype.GetNeighbors = function (origin, oppoFirst) {
             if (oppoFirst === void 0) { oppoFirst = false; }
             var relativePosArr = [[origin.x, origin.y - 1], [origin.x + 1, origin.y], [origin.x, origin.y + 1], [origin.x - 1, origin.y]];
@@ -109,17 +111,31 @@ var Dylan;
             return Math.abs(point1.x - point2.x) + Math.abs(point1.y - point2.y);
         };
         //用于一次性展示所有格子的消耗
-        MapGraph.prototype.SetFinalCost = function () {
+        MapGraph.prototype.SetPreCost = function () {
             for (var x = 0; x < this.width; x++) {
                 for (var y = 0; y < this.height; y++) {
                     this.GetPoint(x, y).SetPreCost();
                 }
             }
         };
-        MapGraph.prototype.ResetFinialCost = function () {
+        MapGraph.prototype.ResetPreCost = function () {
             for (var x = 0; x < this.width; x++) {
                 for (var y = 0; y < this.height; y++) {
                     this.GetPoint(x, y).ResetPreCost();
+                }
+            }
+        };
+        MapGraph.prototype.SetPreParent = function () {
+            for (var x = 0; x < this.width; x++) {
+                for (var y = 0; y < this.height; y++) {
+                    this.GetPoint(x, y).ResetPreParent();
+                }
+            }
+        };
+        MapGraph.prototype.ResetAllWeight = function () {
+            for (var x = 0; x < this.width; x++) {
+                for (var y = 0; y < this.height; y++) {
+                    this.GetPoint(x, y).ResetWeight();
                 }
             }
         };

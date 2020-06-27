@@ -38,8 +38,9 @@ var Dylan;
             _this.GridColorNoVisited_Max = "#000000";
             _this.GridColorNoVisited_weight = "#888888";
             _this.defaultWeightValue = 1;
-            _this.lastEditWeightPoint = new Laya.Vector2();
-            _this.curEditWeightPoint = new Laya.Vector2();
+            _this.invalidPos = new Laya.Vector2(-1, -1);
+            _this.lastEditWeightPos = new Laya.Vector2();
+            _this.curEditWeightPos = new Laya.Vector2();
             _this.curEditPoint = EditPointType.None;
             _this.isShowNeighbors = false;
             //设置页面宽度，才能保证大页面所有区域都响应鼠标事件
@@ -68,7 +69,7 @@ var Dylan;
             _this.mapSp.on(Laya.Event.MOUSE_DOWN, _this, _this.OnEnableEditWeight);
             _this.mapSp.on(Laya.Event.MOUSE_UP, _this, _this.OnDisableEditWeight);
             _this.costRadioGroup.selectHandler = new Laya.Handler(_this, _this.OnSelectCostRadioGroup);
-            _this.resetWeightBtn.on(Laya.Event.CLICK, _this, _this.OnRestWeightData);
+            _this.resetWeightBtn.on(Laya.Event.CLICK, _this, _this.Reset);
             //运行 设置页
             _this.driveCombo.selectHandler = new Handler(_this, _this.OnSelectDriveCombo, [_this.driveCombo]);
             _this.searchCombo.selectHandler = new Handler(_this, _this.OnSelectSearchCombo, [_this.searchCombo]);
@@ -77,9 +78,10 @@ var Dylan;
             _this.showDirCheck.clickHandler = new Handler(_this, _this.OnShowDirCheck, [_this.showDirCheck]);
             _this.showCostCheck.clickHandler = new Handler(_this, _this.OnShowCostCheck, [_this.showCostCheck]);
             _this.showNeighborsCheck.clickHandler = new Handler(_this, _this.OnShowNeighborsCheck, [_this.showNeighborsCheck]);
-            _this.resetBtn.on(Laya.Event.CLICK, _this, _this.OnResetMap);
             _this.startBtn.on(Laya.Event.CLICK, _this, _this.OnSwitchStart);
             _this.pauseBtn.on(Laya.Event.CLICK, _this, _this.OnSwitchPause);
+            _this.clearBtn.on(Laya.Event.CLICK, _this, _this.OnClearMap);
+            _this.resetBtn.on(Laya.Event.CLICK, _this, _this.Reset);
             //长显示组件
             _this.slider.changeHandler = new Laya.Handler(_this, _this.OnSliderChange);
             _this.scroll.changeHandler = new Laya.Handler(_this, _this.OnSliderChange);
@@ -102,7 +104,10 @@ var Dylan;
             this.startBtn.disabled = true;
             this.pauseBtn.text.text = "暂停";
             this.pauseBtn.disabled = true;
-            this.InitDraw();
+            this.OnSetMapRange();
+            this.OnSetMapStartPoint();
+            this.OnSetMapEndPoint();
+            this.ResetSearch();
         };
         SearchWayPage.prototype.OnRemoveStage = function () { };
         SearchWayPage.prototype.OnSelectFunctionTab = function (tab) {
@@ -194,20 +199,19 @@ var Dylan;
                 if (this.curSetWeight == -1) {
                     this.curSetWeight = this.defaultWeightValue;
                 }
-                Dylan.log("修改 当前使用 的设置权值-----：", this.curSetWeight);
                 this.OnEditWeight();
                 this.mapSp.on(Laya.Event.MOUSE_MOVE, this, this.OnEditWeight);
             }
         };
         SearchWayPage.prototype.OnDisableEditWeight = function () {
+            Dylan.CopyVec2(this.lastEditWeightPos, this.invalidPos);
             this.mapSp.off(Laya.Event.MOUSE_MOVE, this, this.OnEditWeight);
         };
         SearchWayPage.prototype.OnEditWeight = function () {
             var vec2 = this.GetClickMapSpPoint();
             if (vec2) {
-                if (!this.lastEditWeightPoint || this.lastEditWeightPoint.x != vec2.x || this.lastEditWeightPoint.y != vec2.y) {
-                    this.lastEditWeightPoint.x = vec2.x;
-                    this.lastEditWeightPoint.y = vec2.y;
+                if (Dylan.Vec2Equal(this.lastEditWeightPos, this.invalidPos) || !Dylan.Vec2Equal(this.lastEditWeightPos, vec2)) {
+                    Dylan.CopyVec2(this.lastEditWeightPos, vec2);
                     Dylan.GMapSearch.SetPointWeight(vec2.x, vec2.y, this.curSetWeight);
                     return vec2;
                 }
@@ -216,26 +220,30 @@ var Dylan;
         };
         SearchWayPage.prototype.GetClickMapSpPoint = function () {
             // if (this.mapSp.mouseX % this.GridWidth % (this.GridWidth - 1) && this.mapSp.mouseY % this.GridHeight % (this.GridHeight - 1)) {
-            this.curEditWeightPoint.x = Math.floor(this.mapSp.mouseX / this.GridWidth);
-            this.curEditWeightPoint.y = Math.floor(this.mapSp.mouseY / this.GridHeight);
-            return this.curEditWeightPoint;
+            this.curEditWeightPos.x = Math.floor(this.mapSp.mouseX / this.GridWidth);
+            this.curEditWeightPos.y = Math.floor(this.mapSp.mouseY / this.GridHeight);
+            return this.curEditWeightPos;
             // }
             // return null;
         };
         SearchWayPage.prototype.OnSelectCostRadioGroup = function (index) {
             this.defaultWeightValue = index + 1;
-        };
-        SearchWayPage.prototype.OnRestWeightData = function () {
-            Dylan.GMapSearch.Reset();
+            Dylan.log("---------------:", this.defaultWeightValue);
         };
         SearchWayPage.prototype.OnSliderChange = function (value) {
             Dylan.GMapSearch.SearchSteps(value);
         };
-        SearchWayPage.prototype.InitDraw = function () {
-            this.OnSetMapRange();
-            this.OnSetMapStartPoint();
-            this.OnSetMapEndPoint();
+        //重置寻路数据
+        SearchWayPage.prototype.Clear = function () {
+            Dylan.GMapSearch.Clear();
+            this.ResetSearch();
+        };
+        //重置寻路数据（包含重置权值）
+        SearchWayPage.prototype.Reset = function () {
             Dylan.GMapSearch.Reset();
+            this.ResetSearch();
+        };
+        SearchWayPage.prototype.ResetSearch = function () {
             this.OnSearchStop();
             this.startBtn.disabled = false;
         };
@@ -261,8 +269,8 @@ var Dylan;
         SearchWayPage.prototype.OnShowNeighborsCheck = function () {
             this.isShowNeighbors;
         };
-        SearchWayPage.prototype.OnResetMap = function () {
-            this.InitDraw();
+        SearchWayPage.prototype.OnClearMap = function () {
+            this.Clear();
             Dylan.GTipsMgr.Show("设置完成！", 1);
         };
         SearchWayPage.prototype.OnSwitchStart = function () {
@@ -287,7 +295,8 @@ var Dylan;
             this.mapSp.mouseThrough = false;
         };
         SearchWayPage.prototype.OnSearchReset = function () {
-            this.InitDraw();
+            // this.InitDraw();
+            this.Clear();
         };
         SearchWayPage.prototype.OnSearchPause = function () {
             this.pauseBtn.text.text = "恢复";
@@ -319,13 +328,15 @@ var Dylan;
                     else if (point.isProcess) {
                         curColor = this.GridColorInQueue;
                     }
-                    else if (point.isVisited) {
-                        curColor = this.GridColorVisited;
-                    }
                     else {
                         switch (point.weight) {
                             case 1:
-                                curColor = this.GridColorNoVisited_1;
+                                if (point.isVisited) {
+                                    curColor = this.GridColorVisited;
+                                }
+                                else {
+                                    curColor = this.GridColorNoVisited_1;
+                                }
                                 break;
                             case Infinity:
                                 curColor = this.GridColorNoVisited_Max;

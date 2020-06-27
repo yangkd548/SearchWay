@@ -30,8 +30,8 @@ var Dylan;
         };
         BstarSearch.prototype.DoSearchOneStep = function () {
         };
-        BstarSearch.prototype.Reset = function () {
-            _super.prototype.Reset.call(this);
+        BstarSearch.prototype.Clear = function () {
+            _super.prototype.Clear.call(this);
         };
         return BstarSearch;
     }(Dylan.BaseSearch));

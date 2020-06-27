@@ -45,7 +45,7 @@ var Dylan;
                     this.DoPreprocessInfo();
                 }
                 else {
-                    this.mapGraph.ResetFinialCost();
+                    this.mapGraph.ResetPreCost();
                 }
             },
             enumerable: false,
@@ -59,7 +59,7 @@ var Dylan;
                 while (this.isRunning) {
                     this.DoSearchOneStep();
                 }
-                this.mapGraph.SetFinalCost();
+                this.mapGraph.SetPreCost();
                 this.Clear();
             }
         };
@@ -162,7 +162,7 @@ var Dylan;
                 }
                 else {
                     Dylan.GEventMgr.Off(Dylan.MapPoint.PointCostChanged, this, this.EmitReDraw);
-                    this.Reset();
+                    this.Clear();
                 }
             },
             enumerable: false,
@@ -187,7 +187,7 @@ var Dylan;
             }
         };
         BaseSearch.prototype.DoSearchToStep = function (step) {
-            this.Reset();
+            this.Clear();
             this.DoSearchSteps(step);
         };
         BaseSearch.prototype.SearchOneStep = function () {
@@ -237,6 +237,11 @@ var Dylan;
                 }
             }
         };
+        BaseSearch.prototype.ResetAllWeight = function () {
+            this.mapGraph.ResetAllWeight();
+            this.DoPreprocessInfo();
+            this.EmitReDraw();
+        };
         BaseSearch.prototype.Clear = function () {
             this._curPreprocessInfo = false;
             this._step = 0;
@@ -245,10 +250,6 @@ var Dylan;
             this._curPoint = null;
             this.driveTimes = 0;
             this.mapGraph.Clear();
-        };
-        BaseSearch.prototype.Reset = function () {
-            this.Clear();
-            this.mapGraph.Reset();
             this.EmitReDraw();
         };
         BaseSearch.SearchFinish = "SearchFinish";

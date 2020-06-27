@@ -35,7 +35,7 @@ module Dylan {
                 this.DoPreprocessInfo();
             }
             else{
-                this.mapGraph.ResetFinialCost();
+                this.mapGraph.ResetPreCost();
             }
         }
         private _curPreprocessInfo: boolean = false;
@@ -47,7 +47,7 @@ module Dylan {
                 while (this.isRunning) {
                     this.DoSearchOneStep();
                 }
-                this.mapGraph.SetFinalCost();
+                this.mapGraph.SetPreCost();
                 this.Clear();
             }
         }
@@ -138,7 +138,7 @@ module Dylan {
             }
             else {
                 GEventMgr.Off(MapPoint.PointCostChanged, this, this.EmitReDraw);
-                this.Reset();
+                this.Clear();
             }
         }
 
@@ -164,7 +164,7 @@ module Dylan {
         }
 
         protected DoSearchToStep(step: number): void {
-            this.Reset();
+            this.Clear();
             this.DoSearchSteps(step);
         }
 
@@ -217,7 +217,13 @@ module Dylan {
             }
         }
 
-        private Clear():void{
+        public ResetAllWeight():void{
+            this.mapGraph.ResetAllWeight();
+            this.DoPreprocessInfo();
+            this.EmitReDraw();
+        }
+
+        public Clear():void{
             this._curPreprocessInfo = false;
             this._step = 0;
             this._maxStep = 0;
@@ -225,11 +231,6 @@ module Dylan {
             this._curPoint = null;
             this.driveTimes = 0;
             this.mapGraph.Clear();
-        }
-
-        public Reset(): void {
-            this.Clear();
-            this.mapGraph.Reset();
             this.EmitReDraw();
         }
     }

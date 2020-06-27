@@ -1,7 +1,7 @@
 var Dylan;
 (function (Dylan) {
     var MapPoint = /** @class */ (function () {
-        function MapPoint() {
+        function MapPoint(graph, x, y) {
             this._x = -1;
             this._y = -1;
             //权值（权重）
@@ -12,6 +12,7 @@ var Dylan;
             //     this.SetIsUnvisited();
             // }
             this._isVisited = false;
+            this.SetValue(graph, x, y);
         }
         Object.defineProperty(MapPoint.prototype, "x", {
             get: function () {
@@ -34,13 +35,11 @@ var Dylan;
             enumerable: false,
             configurable: true
         });
-        MapPoint.prototype.SetValue = function (graph, x, y, weight) {
-            if (weight === void 0) { weight = 1; }
+        MapPoint.prototype.SetValue = function (graph, x, y) {
             x = Math.min(graph.width - 1, Math.max(0, x));
             y = Math.min(graph.height - 1, Math.max(0, y));
             this._x = x;
             this._y = y;
-            this._weight = weight;
             this._id = this.x + this.y * graph.width;
         };
         Object.defineProperty(MapPoint.prototype, "key", {
@@ -187,15 +186,14 @@ var Dylan;
             this._isVisited = false;
             this._parent = null;
         };
-        MapPoint.prototype.ResetBase = function () {
-            this._x = -1;
-            this._y = -1;
-            this._weight = this.OriginWeight;
-        };
-        MapPoint.prototype.Reset = function () {
-            this.Clear();
-            this.ResetBase();
-        };
+        // private ResetBase(): void {
+        //     this._x = -1;
+        //     this._y = -1;
+        // }
+        // public Reset(): void {
+        //     this.Clear();
+        //     this.ResetBase();
+        // }
         //暂时没用到
         MapPoint.prototype.IsSamePos = function (other) {
             return other && this.x == other.x && this.y == other.y;

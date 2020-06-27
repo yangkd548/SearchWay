@@ -33,7 +33,7 @@ module Dylan {
 
         public SetMap(width: number, height: number, formatHandler: Laya.Handler = null): void {
             let needReset = formatHandler || this._width != width || this._height != height;
-            if (needReset && !formatHandler) formatHandler = this.resetPointHandler;
+            if (needReset && !formatHandler) formatHandler = this.clearPointHandler;
             this._width = width;
             this._height = height;
             for (let x = 0; x < width; x++) {
@@ -41,25 +41,26 @@ module Dylan {
                     this.grids.push([]);
                 }
                 for (let y = 0; y < height; y++) {
-                    this.grids[x][y] = this.grids[x][y] || new MapPoint();
-                    if (needReset) {
-                        formatHandler.runWith(this.grids[x][y]);
+                    let point = this.GetPoint(x, y);
+                    if(!point){
+                        point = this.grids[x][y] = new MapPoint(this, x, y);
                     }
-                    this.grids[x][y].SetValue(this, x, y);
+                    if (needReset) {
+                        formatHandler.runWith(point);
+                    }
                 }
             }
         }
 
         private clearPointHandler = new Laya.Handler(this, (point: MapPoint) => { point.Clear(); }, null, false);
-        private resetPointHandler = new Laya.Handler(this, (point: MapPoint) => { point.Reset(); }, null, false);
-
         public Clear(): void {
             this.SetMap(this.width, this.height, this.clearPointHandler);
         }
 
-        public Reset(): void {
-            this.SetMap(this.width, this.height, this.resetPointHandler);
-        }
+        // private resetPointHandler = new Laya.Handler(this, (point: MapPoint) => { point.Reset(); }, null, false);
+        // public Reset(): void {
+        //     this.SetMap(this.width, this.height, this.resetPointHandler);
+        // }
 
         public GetNeighbors(origin: MapPoint, oppoFirst: boolean = false): Array<MapPoint> {
             let relativePosArr = [[origin.x, origin.y - 1], [origin.x + 1, origin.y], [origin.x, origin.y + 1], [origin.x - 1, origin.y]];
@@ -104,7 +105,7 @@ module Dylan {
         }
 
         //用于一次性展示所有格子的消耗
-        public SetFinalCost(): void {
+        public SetPreCost(): void {
             for (let x = 0; x < this.width; x++) {
                 for (let y = 0; y < this.height; y++) {
                     this.GetPoint(x, y).SetPreCost();
@@ -112,10 +113,26 @@ module Dylan {
             }
         }
 
-        public ResetFinialCost(): void {
+        public ResetPreCost(): void {
             for (let x = 0; x < this.width; x++) {
                 for (let y = 0; y < this.height; y++) {
                     this.GetPoint(x, y).ResetPreCost();
+                }
+            }
+        }
+
+        public SetPreParent():void{
+            for (let x = 0; x < this.width; x++) {
+                for (let y = 0; y < this.height; y++) {
+                    this.GetPoint(x, y).ResetPreParent();
+                }
+            }
+        }
+
+        public ResetAllWeight():void{
+            for (let x = 0; x < this.width; x++) {
+                for (let y = 0; y < this.height; y++) {
+                    this.GetPoint(x, y).ResetWeight();
                 }
             }
         }

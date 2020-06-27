@@ -2,7 +2,7 @@
     "x":0,
     "type":"View",
     "selectedBox":57,
-    "selecteID":130,
+    "selecteID":131,
     "props":{"width":600,"sceneColor":"#ffffff","height":400},
     "nodeParent":-1,
     "label":"View",
@@ -412,13 +412,14 @@
             "props":{"y":120,"x":480,"width":250,"var":"gridSetBox","height":331},
             "nodeParent":1,
             "label":"Box(gridSetBox)",
-            "isOpen":false,
+            "isOpen":true,
             "isDirectory":true,
             "isAniNode":true,
             "hasChild":true,
             "compId":71,
             "child":[
                 {
+                    "x":30,
                     "type":"Label",
                     "props":{"y":0,"x":40,"wordWrap":true,"width":173,"text":"点击切换 通行性\\n\\n左键点击格子，可切换格子的\\n可通行、\\n禁通行、\\n有权值通行\\n之间循环切换","leading":4,"height":115,"fontSize":13,"color":"#8e4847"},
                     "nodeParent":71,
@@ -432,6 +433,7 @@
                         ]
                 },
                 {
+                    "x":30,
                     "type":"Label",
                     "props":{"y":150,"x":50,"text":"设置 “有通行权值”"},
                     "nodeParent":71,
@@ -444,6 +446,7 @@
                         ]
                 },
                 {
+                    "x":30,
                     "type":"RadioGroup",
                     "props":{"y":178,"x":50,"var":"costRadioGroup","space":20,"skin":"comp/radiogroup.png","selectedIndex":0,"labels":"1倍权值（默认）,2倍权值,3倍权值,4倍权值,5倍权值","direction":"vertical"},
                     "nodeParent":71,
@@ -456,6 +459,7 @@
                         ]
                 },
                 {
+                    "x":30,
                     "type":"Button",
                     "props":{"y":149,"x":160,"width":100,"var":"resetWeightBtn","skin":"comp/button.png","sizeGrid":"4,4,4,4","labelColors":"#AABB00","label":"重置权值","height":37},
                     "nodeParent":71,
@@ -467,7 +471,7 @@
                     "child":[
                         ]
                 }],
-            "$HIDDEN":true
+            "$HIDDEN":false
         },
         {
             "x":15,
@@ -666,7 +670,7 @@
                 {
                     "x":30,
                     "type":"Button",
-                    "props":{"y":268,"x":147,"width":100,"var":"pauseBtn","skin":"comp/button.png","sizeGrid":"4,4,4,4","label":"暂停","height":37},
+                    "props":{"y":268,"x":148,"width":100,"var":"pauseBtn","skin":"comp/button.png","sizeGrid":"4,4,4,4","label":"暂停","height":37},
                     "nodeParent":57,
                     "label":"Button(pauseBtn)",
                     "isDirectory":false,
@@ -679,7 +683,20 @@
                 {
                     "x":30,
                     "type":"Button",
-                    "props":{"y":325,"x":82,"width":100,"var":"resetBtn","skin":"comp/button.png","sizeGrid":"4,4,4,4","labelColors":"#AABB00","label":"重置地图","height":37},
+                    "props":{"y":326,"x":26,"width":100,"var":"clearBtn","skin":"comp/button.png","sizeGrid":"4,4,4,4","labelColors":"#AABB00","label":"重置","height":37},
+                    "nodeParent":57,
+                    "label":"Button(clearBtn)",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":134,
+                    "child":[
+                        ]
+                },
+                {
+                    "x":30,
+                    "type":"Button",
+                    "props":{"y":326,"x":148,"width":100,"var":"resetBtn","skin":"comp/button.png","sizeGrid":"4,4,4,4","labelColors":"#FF0000","label":"重置权值","height":37},
                     "nodeParent":57,
                     "label":"Button(resetBtn)",
                     "isDirectory":false,
@@ -689,7 +706,7 @@
                     "child":[
                         ]
                 }],
-            "$HIDDEN":false
+            "$HIDDEN":true
         }],
     "animations":[
         {

@@ -87,9 +87,14 @@ module Dylan {
             this._curSearch.SetMap(width, height);
         }
 
-        public Reset(): void {
-            this._curSearch.Reset();
+        public Clear():void{
             this.ClearDrive();
+            this._curSearch.Clear();
+        }
+
+        public Reset():void{
+            this.Clear();
+            this.curSearch.ResetAllWeight();
         }
 
         public SetStartPoint(fromX: number, fromY: number): void {

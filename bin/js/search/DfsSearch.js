@@ -74,9 +74,9 @@ var Dylan;
                 this.SetCurPoint(this.curPoint.parent);
             }
         };
-        DfsSearch.prototype.Reset = function () {
+        DfsSearch.prototype.Clear = function () {
             this._isOver = false;
-            _super.prototype.Reset.call(this);
+            _super.prototype.Clear.call(this);
         };
         return DfsSearch;
     }(Dylan.BaseSearch));

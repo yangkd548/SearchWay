@@ -96,9 +96,9 @@ var Dylan;
             _super.prototype.SetCurPoint.call(this, value);
             this.curPoint.SetIsVisited();
         };
-        BfsBaseSearch.prototype.Reset = function () {
+        BfsBaseSearch.prototype.Clear = function () {
             this.frontier.splice(0);
-            _super.prototype.Reset.call(this);
+            _super.prototype.Clear.call(this);
         };
         return BfsBaseSearch;
     }(Dylan.BaseSearch));

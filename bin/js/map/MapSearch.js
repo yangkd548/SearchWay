@@ -88,9 +88,13 @@ var Dylan;
         MapSearch.prototype.SetMap = function (width, height) {
             this._curSearch.SetMap(width, height);
         };
-        MapSearch.prototype.Reset = function () {
-            this._curSearch.Reset();
+        MapSearch.prototype.Clear = function () {
             this.ClearDrive();
+            this._curSearch.Clear();
+        };
+        MapSearch.prototype.Reset = function () {
+            this.Clear();
+            this.curSearch.ResetAllWeight();
         };
         MapSearch.prototype.SetStartPoint = function (fromX, fromY) {
             this._curSearch.SetStart(fromX, fromY);

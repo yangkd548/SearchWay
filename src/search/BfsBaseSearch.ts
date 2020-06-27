@@ -82,9 +82,9 @@ module Dylan {
             this.curPoint.SetIsVisited();
         }
 
-        public Reset(): void {
+        public Clear(): void {
             this.frontier.splice(0);
-            super.Reset();
+            super.Clear();
         }
     }
 }

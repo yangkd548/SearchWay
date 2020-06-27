@@ -12,9 +12,9 @@ module Dylan{
             
         }
 
-        public Reset():void{
+        public Clear():void{
             
-            super.Reset();
+            super.Clear();
         }
     }
 }

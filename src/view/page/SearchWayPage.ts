@@ -28,8 +28,10 @@ module Dylan {
 
 		private defaultWeightValue: number = 1;
 		private curSetWeight: number;
-		private lastEditWeightPoint: Laya.Vector2 = new Laya.Vector2();
-		private curEditWeightPoint: Laya.Vector2 = new Laya.Vector2();
+
+		private readonly invalidPos: Laya.Vector2 = new Laya.Vector2(-1, -1);
+		private lastEditWeightPos: Laya.Vector2 = new Laya.Vector2();
+		private curEditWeightPos: Laya.Vector2 = new Laya.Vector2();
 
 		private curEditPoint: EditPointType = EditPointType.None;
 
@@ -66,8 +68,7 @@ module Dylan {
 			this.mapSp.on(Laya.Event.MOUSE_DOWN, this, this.OnEnableEditWeight);
 			this.mapSp.on(Laya.Event.MOUSE_UP, this, this.OnDisableEditWeight);
 			this.costRadioGroup.selectHandler = new Laya.Handler(this, this.OnSelectCostRadioGroup);
-			this.resetWeightBtn.on(Laya.Event.CLICK, this, this.OnRestWeightData);
-
+			this.resetWeightBtn.on(Laya.Event.CLICK, this, this.Reset);
 
 			//运行 设置页
 			this.driveCombo.selectHandler = new Handler(this, this.OnSelectDriveCombo, [this.driveCombo]);
@@ -77,9 +78,10 @@ module Dylan {
 			this.showDirCheck.clickHandler = new Handler(this, this.OnShowDirCheck, [this.showDirCheck]);
 			this.showCostCheck.clickHandler = new Handler(this, this.OnShowCostCheck, [this.showCostCheck]);
 			this.showNeighborsCheck.clickHandler = new Handler(this, this.OnShowNeighborsCheck, [this.showNeighborsCheck]);
-			this.resetBtn.on(Laya.Event.CLICK, this, this.OnResetMap);
 			this.startBtn.on(Laya.Event.CLICK, this, this.OnSwitchStart);
 			this.pauseBtn.on(Laya.Event.CLICK, this, this.OnSwitchPause);
+			this.clearBtn.on(Laya.Event.CLICK, this, this.OnClearMap);
+			this.resetBtn.on(Laya.Event.CLICK, this, this.Reset);
 
 			//长显示组件
 			this.slider.changeHandler = new Laya.Handler(this, this.OnSliderChange);
@@ -107,7 +109,10 @@ module Dylan {
 			this.pauseBtn.text.text = "暂停";
 			this.pauseBtn.disabled = true;
 
-			this.InitDraw();
+			this.OnSetMapRange();
+			this.OnSetMapStartPoint();
+			this.OnSetMapEndPoint();
+			this.ResetSearch();
 		}
 
 		public OnRemoveStage(): void { }
@@ -209,22 +214,21 @@ module Dylan {
 				if (this.curSetWeight == -1) {
 					this.curSetWeight = this.defaultWeightValue;
 				}
-				log("修改 当前使用 的设置权值-----：", this.curSetWeight);
 				this.OnEditWeight();
 				this.mapSp.on(Laya.Event.MOUSE_MOVE, this, this.OnEditWeight);
 			}
 		}
 
 		private OnDisableEditWeight(): void {
+			CopyVec2(this.lastEditWeightPos, this.invalidPos);
 			this.mapSp.off(Laya.Event.MOUSE_MOVE, this, this.OnEditWeight);
 		}
 
 		private OnEditWeight(): Laya.Vector2 {
 			let vec2 = this.GetClickMapSpPoint();
 			if (vec2) {
-				if (!this.lastEditWeightPoint || this.lastEditWeightPoint.x != vec2.x || this.lastEditWeightPoint.y != vec2.y) {
-					this.lastEditWeightPoint.x = vec2.x;
-					this.lastEditWeightPoint.y = vec2.y;
+				if (Vec2Equal(this.lastEditWeightPos, this.invalidPos) || !Vec2Equal(this.lastEditWeightPos, vec2)) {
+					CopyVec2(this.lastEditWeightPos, vec2);
 					GMapSearch.SetPointWeight(vec2.x, vec2.y, this.curSetWeight);
 					return vec2;
 				}
@@ -234,30 +238,35 @@ module Dylan {
 
 		private GetClickMapSpPoint(): Laya.Vector2 {
 			// if (this.mapSp.mouseX % this.GridWidth % (this.GridWidth - 1) && this.mapSp.mouseY % this.GridHeight % (this.GridHeight - 1)) {
-			this.curEditWeightPoint.x = Math.floor(this.mapSp.mouseX / this.GridWidth);
-			this.curEditWeightPoint.y = Math.floor(this.mapSp.mouseY / this.GridHeight);
-			return this.curEditWeightPoint;
+			this.curEditWeightPos.x = Math.floor(this.mapSp.mouseX / this.GridWidth);
+			this.curEditWeightPos.y = Math.floor(this.mapSp.mouseY / this.GridHeight);
+			return this.curEditWeightPos;
 			// }
 			// return null;
 		}
 
 		private OnSelectCostRadioGroup(index: number): void {
 			this.defaultWeightValue = index + 1;
-		}
-
-		private OnRestWeightData(): void {
-			GMapSearch.Reset();
+			log("---------------:", this.defaultWeightValue);
 		}
 
 		private OnSliderChange(value): void {
 			GMapSearch.SearchSteps(value);
 		}
 
-		private InitDraw(): void {
-			this.OnSetMapRange();
-			this.OnSetMapStartPoint();
-			this.OnSetMapEndPoint();
+		//重置寻路数据
+		private Clear(): void {
+			GMapSearch.Clear();
+			this.ResetSearch();
+		}
+
+		//重置寻路数据（包含重置权值）
+		private Reset(): void {
 			GMapSearch.Reset();
+			this.ResetSearch();
+		}
+
+		private ResetSearch(): void {
 			this.OnSearchStop();
 			this.startBtn.disabled = false;
 		}
@@ -292,8 +301,8 @@ module Dylan {
 			this.isShowNeighbors;
 		}
 
-		private OnResetMap(): void {
-			this.InitDraw();
+		private OnClearMap(): void {
+			this.Clear();
 			GTipsMgr.Show("设置完成！", 1);
 		}
 
@@ -323,7 +332,8 @@ module Dylan {
 		}
 
 		private OnSearchReset(): void {
-			this.InitDraw();
+			// this.InitDraw();
+			this.Clear();
 		}
 
 		private OnSearchPause(): void {
@@ -358,13 +368,15 @@ module Dylan {
 					else if (point.isProcess) {
 						curColor = this.GridColorInQueue;
 					}
-					else if (point.isVisited) {
-						curColor = this.GridColorVisited;
-					}
 					else {
 						switch (point.weight) {
 							case 1:
-								curColor = this.GridColorNoVisited_1;
+								if (point.isVisited) {
+									curColor = this.GridColorVisited;
+								}
+								else {
+									curColor = this.GridColorNoVisited_1;
+								}
 								break;
 							case Infinity:
 								curColor = this.GridColorNoVisited_Max;

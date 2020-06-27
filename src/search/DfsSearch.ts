@@ -55,9 +55,9 @@ module Dylan {
             }
         }
 
-        public Reset(): void {
+        public Clear(): void {
             this._isOver = false;
-            super.Reset();
+            super.Clear();
         }
     }
 }
