@@ -101,7 +101,7 @@ module Dylan {
 			this.functionTab.selectedIndex = 2;
 			//由此页面，设置搜索配置（如果多个页面的话，还是得MapSearch类提供获取当前配置的public接口）
 			this.driveCombo.selectedIndex = E_DriveMode.Auto;
-			this.searchCombo.selectedIndex = E_SearchType.DIJKSTRA;
+			this.searchCombo.selectedIndex = E_SearchType.Astar;
 
 			this.startBtn.text.text = "开始";
 			this.startBtn.disabled = true;
@@ -407,7 +407,6 @@ module Dylan {
 					let gy = curY + this.LineWidth;
 					this.mapSp.graphics.drawRect(gx, gy, this.GridWidth - this.LineWidth * 2, this.GridHeight - this.LineWidth * 2, curColor);
 					if (this.showCostCheck.selected) {
-						console.log("cost : ",search.isPreprocessInfo, point.preCost, point.cost);
 						let cost = search.isPreprocessInfo ? point.preCost : point.cost;
 						if (cost) {
 							this.mapSp.graphics.fillText(cost.toString(), curX + this.GridWidth / 2, curY + this.GridHeight / 4, "10px Arial", "#92CCD8", "center");

@@ -25,12 +25,13 @@ module Dylan {
             this.EmitReDraw();
         }
 
-        private _isPreprocessInfo: boolean = false;
+        //算法之外的设置，应该是静态变量
+        private static _isPreprocessInfo: boolean = false;
         public get isPreprocessInfo(): boolean {
-            return this._isPreprocessInfo;
+            return BaseSearch._isPreprocessInfo;
         }
         public set isPreprocessInfo(value: boolean) {
-            this._isPreprocessInfo = value;
+            BaseSearch._isPreprocessInfo = value;
             if(value){
                 this.DoPreprocessInfo();
             }
@@ -41,7 +42,7 @@ module Dylan {
         private _curPreprocessInfo: boolean = false;
         //尝试 不考虑终点，遍历地图
         private DoPreprocessInfo(): void {
-            if (this._isPreprocessInfo) {
+            if (BaseSearch._isPreprocessInfo) {
                 this._curPreprocessInfo = true;
                 this.Start();
                 while (this.isRunning) {

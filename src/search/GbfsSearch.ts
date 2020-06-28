@@ -18,7 +18,6 @@ module Dylan {
 
         protected AddFrontierPoint(point: MapPoint): void {
             super.AddFrontierPoint(point);
-            log("长度-----：", this.frontier.length);
             let lastPos = this.frontier.indexOf(point);
             if (lastPos != -1) {
                 this.frontier.splice(lastPos, 1);

@@ -4,7 +4,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    }
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -26,7 +26,7 @@ var Dylan;
             get: function () {
                 return this.frontier.length == 0;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         BfsBaseSearch.prototype.Start = function () {

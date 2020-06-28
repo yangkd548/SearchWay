@@ -4,7 +4,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    }
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -99,7 +99,7 @@ var Dylan;
             this.functionTab.selectedIndex = 2;
             //由此页面，设置搜索配置（如果多个页面的话，还是得MapSearch类提供获取当前配置的public接口）
             this.driveCombo.selectedIndex = Dylan.E_DriveMode.Auto;
-            this.searchCombo.selectedIndex = Dylan.E_SearchType.DIJKSTRA;
+            this.searchCombo.selectedIndex = Dylan.E_SearchType.Astar;
             this.startBtn.text.text = "开始";
             this.startBtn.disabled = true;
             this.pauseBtn.text.text = "暂停";
@@ -368,7 +368,6 @@ var Dylan;
                     var gy = curY + this.LineWidth;
                     this.mapSp.graphics.drawRect(gx, gy, this.GridWidth - this.LineWidth * 2, this.GridHeight - this.LineWidth * 2, curColor);
                     if (this.showCostCheck.selected) {
-                        console.log("cost : ", search.isPreprocessInfo, point.preCost, point.cost);
                         var cost = search.isPreprocessInfo ? point.preCost : point.cost;
                         if (cost) {
                             this.mapSp.graphics.fillText(cost.toString(), curX + this.GridWidth / 2, curY + this.GridHeight / 4, "10px Arial", "#92CCD8", "center");

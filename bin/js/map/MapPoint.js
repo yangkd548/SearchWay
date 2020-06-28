@@ -18,21 +18,21 @@ var Dylan;
             get: function () {
                 return this._x;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(MapPoint.prototype, "y", {
             get: function () {
                 return this._y;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(MapPoint.prototype, "id", {
             get: function () {
                 return this._id;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         MapPoint.prototype.SetValue = function (graph, x, y) {
@@ -46,14 +46,14 @@ var Dylan;
             get: function () {
                 return this._x + "_" + this._y;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(MapPoint.prototype, "weight", {
             get: function () {
                 return this._weight;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         MapPoint.prototype.SetWeight = function (weight) {
@@ -72,14 +72,14 @@ var Dylan;
             set: function (parent) {
                 this._parent = parent;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(MapPoint.prototype, "preParent", {
             get: function () {
                 return this._preParent;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         MapPoint.prototype.SetPreParent = function () {
@@ -95,14 +95,14 @@ var Dylan;
             set: function (value) {
                 this._cost = value;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(MapPoint.prototype, "preCost", {
             get: function () {
                 return this._preCost;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         MapPoint.prototype.SetPreCost = function () {
@@ -118,7 +118,7 @@ var Dylan;
             set: function (value) {
                 this._heuristic = value;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(MapPoint.prototype, "f", {
@@ -128,7 +128,7 @@ var Dylan;
             set: function (value) {
                 this._f = value;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         MapPoint.prototype.GetNextWeight = function () {
@@ -148,7 +148,7 @@ var Dylan;
             get: function () {
                 return this._isProcess;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         MapPoint.prototype.SetIsProcess = function () {
@@ -159,7 +159,7 @@ var Dylan;
             get: function () {
                 return this._isVisited;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         MapPoint.prototype.SetIsVisited = function () {
@@ -177,7 +177,7 @@ var Dylan;
             get: function () {
                 return !this._isVisited && !this._isProcess;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         MapPoint.prototype.Clear = function () {

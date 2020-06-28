@@ -9,7 +9,7 @@ module Dylan {
                 let newCost = this.mapGraph.GetCost(this.curPoint, next);
                 if (!next.cost || newCost < next.cost) {
                     next.cost = newCost;
-                    next.f = newCost + this.mapGraph.GetHeuristicDis(this.endPoint, next);
+                    next.f = newCost + this.mapGraph.GetHeuristicDis(this.endPoint, next) * 1.3;//1.01即可实现部分走斜线的功效
                     this.AddFrontierPoint(next);
                     if (this.isSucc) {
                         break;
@@ -25,6 +25,9 @@ module Dylan {
                 this.frontier.splice(lastPos, 1);
             }
             this.InsertIncArr(this.frontier, "f", point, 0, lastPos);
+            for(let i in this.frontier){
+                log(i, this.frontier[i].f, this.frontier[i].key);
+            }
         }
 
     }

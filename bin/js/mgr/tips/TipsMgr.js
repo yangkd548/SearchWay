@@ -11,14 +11,14 @@ var Dylan;
             get: function () {
                 return this._tips;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(TipsObj.prototype, "icon", {
             get: function () {
                 return this._icon;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         return TipsObj;
@@ -37,7 +37,7 @@ var Dylan;
                 }
                 return TipsMgr._inst;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         //

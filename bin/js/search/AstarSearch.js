@@ -4,7 +4,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    }
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -28,7 +28,7 @@ var Dylan;
                 var newCost = this.mapGraph.GetCost(this.curPoint, next);
                 if (!next.cost || newCost < next.cost) {
                     next.cost = newCost;
-                    next.f = newCost + this.mapGraph.GetHeuristicDis(this.endPoint, next);
+                    next.f = newCost + this.mapGraph.GetHeuristicDis(this.endPoint, next) * 1.3;
                     this.AddFrontierPoint(next);
                     if (this.isSucc) {
                         break;
@@ -37,12 +37,18 @@ var Dylan;
             }
         };
         AstarSearch.prototype.AddFrontierPoint = function (point) {
+            Dylan.log(1);
+            Dylan.log("---------------------------------------------");
+            Dylan.log(1);
             _super.prototype.AddFrontierPoint.call(this, point);
             var lastPos = this.frontier.indexOf(point);
             if (lastPos != -1) {
                 this.frontier.splice(lastPos, 1);
             }
             this.InsertIncArr(this.frontier, "f", point, 0, lastPos);
+            for (var i in this.frontier) {
+                Dylan.log(i, this.frontier[i].f, this.frontier[i].key);
+            }
         };
         return AstarSearch;
     }(Dylan.DijkstraSearch));

@@ -10,7 +10,6 @@ var Dylan;
     })(E_SearchStep = Dylan.E_SearchStep || (Dylan.E_SearchStep = {}));
     var BaseSearch = /** @class */ (function () {
         function BaseSearch() {
-            this._isPreprocessInfo = false;
             this._curPreprocessInfo = false;
             this._isStarted = false;
             this._isSucc = false;
@@ -25,7 +24,7 @@ var Dylan;
             get: function () {
                 return BaseSearch._mapGraph;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         BaseSearch.prototype.EmitReDraw = function () {
@@ -37,10 +36,10 @@ var Dylan;
         };
         Object.defineProperty(BaseSearch.prototype, "isPreprocessInfo", {
             get: function () {
-                return this._isPreprocessInfo;
+                return BaseSearch._isPreprocessInfo;
             },
             set: function (value) {
-                this._isPreprocessInfo = value;
+                BaseSearch._isPreprocessInfo = value;
                 if (value) {
                     this.DoPreprocessInfo();
                 }
@@ -48,12 +47,12 @@ var Dylan;
                     this.mapGraph.ResetPreCost();
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         //尝试 不考虑终点，遍历地图
         BaseSearch.prototype.DoPreprocessInfo = function () {
-            if (this._isPreprocessInfo) {
+            if (BaseSearch._isPreprocessInfo) {
                 this._curPreprocessInfo = true;
                 this.Start();
                 while (this.isRunning) {
@@ -67,7 +66,7 @@ var Dylan;
             get: function () {
                 return this.mapGraph.startPoint;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         BaseSearch.prototype.SetStart = function (fromX, fromY) {
@@ -79,7 +78,7 @@ var Dylan;
             get: function () {
                 return this.mapGraph.endPoint;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         BaseSearch.prototype.SetEndPoint = function (toX, toY) {
@@ -93,42 +92,42 @@ var Dylan;
             get: function () {
                 return this._curPoint;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseSearch.prototype, "isStarted", {
             get: function () {
                 return this._isStarted;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseSearch.prototype, "isRunning", {
             get: function () {
                 return this._isStarted && !this.isOver && !this.isSucc;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseSearch.prototype, "isSucc", {
             get: function () {
                 return this._isSucc;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseSearch.prototype, "isInit", {
             get: function () {
                 return this.mapGraph.startPoint != null;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseSearch.prototype, "step", {
             get: function () {
                 return this._step;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         BaseSearch.prototype.AddStep = function () {
@@ -165,7 +164,7 @@ var Dylan;
                     this.Clear();
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         BaseSearch.prototype.Start = function () {
@@ -252,6 +251,8 @@ var Dylan;
         BaseSearch.SearchFinish = "SearchFinish";
         BaseSearch.SearchReDraw = "SearchReDraw";
         BaseSearch._mapGraph = new Dylan.MapGraph();
+        //算法之外的设置，应该是静态变量
+        BaseSearch._isPreprocessInfo = false;
         return BaseSearch;
     }());
     Dylan.BaseSearch = BaseSearch;

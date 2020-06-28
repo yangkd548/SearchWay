@@ -20,7 +20,7 @@ var Dylan;
                 }
                 return PageMgr._inst;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         PageMgr.prototype.CreateRootLayer = function (name, zOrder) {
