@@ -33,14 +33,14 @@ var Dylan;
             get: function () {
                 return this._isPause;
             },
-            enumerable: false,
+            enumerable: true,
             configurable: true
         });
         Object.defineProperty(MapSearch.prototype, "curSearch", {
             get: function () {
                 return this._curSearch;
             },
-            enumerable: false,
+            enumerable: true,
             configurable: true
         });
         MapSearch.prototype.SetSearchType = function (type) {
@@ -75,14 +75,14 @@ var Dylan;
             get: function () {
                 return this._curSearch.isInit;
             },
-            enumerable: false,
+            enumerable: true,
             configurable: true
         });
         Object.defineProperty(MapSearch.prototype, "isRunning", {
             get: function () {
                 return this._curSearch.isRunning;
             },
-            enumerable: false,
+            enumerable: true,
             configurable: true
         });
         MapSearch.prototype.SetMap = function (width, height) {
@@ -186,7 +186,8 @@ var Dylan;
             this.DoSearch();
         };
         MapSearch.prototype.DoSearch = function () {
-            this._curSearch.SearchCustomSteps();
+            // this._curSearch.SearchCustomSteps();
+            this._curSearch.SearchOneStep();
             if (!this.isRunning) {
                 this.ClearDrive();
                 Dylan.GEventMgr.Emit(MapSearch.SearchStop);

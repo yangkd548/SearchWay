@@ -3,25 +3,25 @@ module Dylan {
         private readonly oppoFirst: boolean = true;
 
         private _isOver: boolean = false;
-        public get isOver(): boolean {
+        protected get isOver(): boolean {
             return this._isOver;
         }
 
-        public SearchCustomSteps(): void {
-            switch (this.searchStep) {
-                case E_SearchStep.OncePoint:
-                    if (this.driveTimes % 1 == 0) {
-                        this.DoSearchSteps();
-                    }
-                    break;
-                default:
-                    this.DoSearchSteps();
-                    break;
-            }
-        }
+        // public SearchCustomSteps(): void {
+        //     switch (this.searchStep) {
+        //         case E_SearchStep.OncePoint:
+        //             if (this.driveTimes % 1 == 0) {
+        //                 this.DoSearchSteps();
+        //             }
+        //             break;
+        //         default:
+        //             this.DoSearchSteps();
+        //             break;
+        //     }
+        // }
 
         protected DoSearchOneStep(): void {
-            if (!this.isInit || this.isOver || this.isSucc) return;
+            if (!this.isRunning) return;
             this.AddStep();
             if (this.curPoint == null) {
                 this.SetCurPoint(this.startPoint);

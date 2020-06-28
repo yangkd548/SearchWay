@@ -2,7 +2,7 @@ module Dylan {
     export class BfsSearch extends BfsBaseSearch {
 
         protected DoSearchOneStep(): void {
-            if (!this.isInit || this.isOver || this.isSucc) return;
+            if (!this.isRunning) return;
             this.AddStep();
             this.SetCurPoint(this.frontier.shift());
             for (let next of this.mapGraph.GetNeighbors(this.curPoint)) {

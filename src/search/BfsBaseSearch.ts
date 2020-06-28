@@ -4,7 +4,7 @@ module Dylan {
         protected frontier: MapPoint[] = [];
         private fromStartDis: number = 0;
 
-        public get isOver(): boolean {
+        protected get isOver(): boolean {
             return this.frontier.length == 0;
         }
 
@@ -16,64 +16,64 @@ module Dylan {
             return false;
         }
 
-        public SearchCustomSteps(): void {
-            switch (this.searchStep) {
-                case E_SearchStep.OncePoint:
-                    if (this.driveTimes % 1 == 0) {
-                        this.DoSearchSteps();
-                    }
-                    break;
-                case E_SearchStep.OnceRound:
-                    if (this.driveTimes % 10 == 0) {
-                        this.SearchOneRound();
-                    }
-                    break;
-                case E_SearchStep.OnceSide:
-                    if (this.driveTimes % 3 == 0) {
-                        this.SearchOneSide();
-                    }
-                    break;
-                default:
-                    this.DoSearchSteps();
-                    break;
-            }
-        }
+        // public SearchCustomSteps(): void {
+        //     switch (this.searchStep) {
+        //         case E_SearchStep.OncePoint:
+        //             if (this.driveTimes % 1 == 0) {
+        //                 this.DoSearchSteps();
+        //             }
+        //             break;
+        //         case E_SearchStep.OnceRound:
+        //             if (this.driveTimes % 10 == 0) {
+        //                 this.SearchOneRound();
+        //             }
+        //             break;
+        //         case E_SearchStep.OnceSide:
+        //             if (this.driveTimes % 3 == 0) {
+        //                 this.SearchOneSide();
+        //             }
+        //             break;
+        //         default:
+        //             this.DoSearchSteps();
+        //             break;
+        //     }
+        // }
 
-        private SearchOneRound(): void {
-            this.fromStartDis++;
-            console.log("---------------", this.fromStartDis);
-            while (this.frontier.length > 0) {
-                let next = this.frontier[0];
-                if (Math.abs(next.x - this.mapGraph.startPoint.x) + Math.abs(next.y - this.mapGraph.startPoint.y) > this.fromStartDis) {
-                    break;
-                }
-                this.DoSearchOneStep();
-            }
-            if (this.isOver) {
-                Laya.timer.clear(this, this.SearchOneRound);
-                this.fromStartDis = 0;
-            }
-        }
+        // private SearchOneRound(): void {
+        //     this.fromStartDis++;
+        //     console.log("---------------", this.fromStartDis);
+        //     while (this.frontier.length > 0) {
+        //         let next = this.frontier[0];
+        //         if (Math.abs(next.x - this.mapGraph.startPoint.x) + Math.abs(next.y - this.mapGraph.startPoint.y) > this.fromStartDis) {
+        //             break;
+        //         }
+        //         this.DoSearchOneStep();
+        //     }
+        //     if (this.isOver) {
+        //         Laya.timer.clear(this, this.SearchOneRound);
+        //         this.fromStartDis = 0;
+        //     }
+        // }
 
-        private SearchOneSide(): void {
-            if (this.frontier.length > 0) {
-                let flag = null;
-                while (this.frontier.length > 0) {
-                    let next = this.frontier[0];
-                    let newFlag = (next.x - this.mapGraph.startPoint.x) / (next.y - this.mapGraph.startPoint.y + 0.001) > 0;
-                    if (flag == null) {
-                        flag = newFlag;
-                    }
-                    else if (flag != newFlag) {
-                        break;
-                    }
-                    this.DoSearchOneStep();
-                }
-            }
-            if (this.isOver) {
-                Laya.timer.clear(this, this.SearchOneSide);
-            }
-        }
+        // private SearchOneSide(): void {
+        //     if (this.frontier.length > 0) {
+        //         let flag = null;
+        //         while (this.frontier.length > 0) {
+        //             let next = this.frontier[0];
+        //             let newFlag = (next.x - this.mapGraph.startPoint.x) / (next.y - this.mapGraph.startPoint.y + 0.001) > 0;
+        //             if (flag == null) {
+        //                 flag = newFlag;
+        //             }
+        //             else if (flag != newFlag) {
+        //                 break;
+        //             }
+        //             this.DoSearchOneStep();
+        //         }
+        //     }
+        //     if (this.isOver) {
+        //         Laya.timer.clear(this, this.SearchOneSide);
+        //     }
+        // }
 
         protected abstract DoSearchOneStep(): void;
 

@@ -4,7 +4,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    };
+    }
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -19,7 +19,7 @@ var Dylan;
             return _super !== null && _super.apply(this, arguments) || this;
         }
         GbfsSearch.prototype.DoSearchOneStep = function () {
-            if (!this.isInit || this.isOver || this.isSucc)
+            if (!this.isRunning)
                 return;
             this.AddStep();
             this.SetCurPoint(this.frontier.shift());
@@ -36,6 +36,7 @@ var Dylan;
         };
         GbfsSearch.prototype.AddFrontierPoint = function (point) {
             _super.prototype.AddFrontierPoint.call(this, point);
+            Dylan.log("长度-----：", this.frontier.length);
             var lastPos = this.frontier.indexOf(point);
             if (lastPos != -1) {
                 this.frontier.splice(lastPos, 1);

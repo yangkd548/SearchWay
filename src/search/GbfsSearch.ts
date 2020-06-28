@@ -2,7 +2,7 @@ module Dylan {
     export class GbfsSearch extends DijkstraSearch {
 
         protected DoSearchOneStep(): void {
-            if (!this.isInit || this.isOver || this.isSucc) return;
+            if (!this.isRunning) return;
             this.AddStep();
             this.SetCurPoint(this.frontier.shift());
             for (let next of this.mapGraph.GetNeighbors(this.curPoint)) {
@@ -18,6 +18,7 @@ module Dylan {
 
         protected AddFrontierPoint(point: MapPoint): void {
             super.AddFrontierPoint(point);
+            log("长度-----：", this.frontier.length);
             let lastPos = this.frontier.indexOf(point);
             if (lastPos != -1) {
                 this.frontier.splice(lastPos, 1);

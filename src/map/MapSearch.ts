@@ -200,7 +200,8 @@ module Dylan {
         }
 
         private DoSearch(): void {
-            this._curSearch.SearchCustomSteps();
+            // this._curSearch.SearchCustomSteps();
+            this._curSearch.SearchOneStep();
             if (!this.isRunning) {
                 this.ClearDrive();
                 GEventMgr.Emit(MapSearch.SearchStop);

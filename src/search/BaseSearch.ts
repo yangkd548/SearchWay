@@ -84,7 +84,7 @@ module Dylan {
             return this._isStarted && !this.isOver && !this.isSucc;
         }
 
-        public abstract get isOver(): boolean;
+        protected abstract get isOver(): boolean;
 
         protected _isSucc: boolean = false;
         public get isSucc(): boolean {
@@ -150,16 +150,11 @@ module Dylan {
             return false;
         }
 
-        public abstract SearchCustomSteps(): void;
-
-        //TODO:考虑一下，如何组织这个方法
-        public AutoSearch(): void {
-            this.DoSearchSteps();
-        }
+        // public abstract SearchCustomSteps(): void;
 
         protected DoSearchSteps(step: number = 1): void {
             for (let i = 0; i < step; i++) {
-                if (this.SearchOneStep()) break;
+                if (!this.SearchOneStep()) break;
             }
         }
 
@@ -168,13 +163,13 @@ module Dylan {
             this.DoSearchSteps(step);
         }
 
-        protected SearchOneStep(): boolean {
+        public SearchOneStep(): boolean {
             this.Start();
-            if (this.isOver) return true;
+            if (!this.isRunning) return false;
             this.DoSearchOneStep();
             this.EmitReDraw();
-            if (this.isOver) return true;
-            return false;
+            if (!this.isRunning) return false;
+            return true;
         }
 
         protected abstract DoSearchOneStep(): void;

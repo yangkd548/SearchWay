@@ -4,7 +4,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    };
+    }
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -25,23 +25,23 @@ var Dylan;
             get: function () {
                 return this._isOver;
             },
-            enumerable: false,
+            enumerable: true,
             configurable: true
         });
-        DfsSearch.prototype.SearchCustomSteps = function () {
-            switch (this.searchStep) {
-                case Dylan.E_SearchStep.OncePoint:
-                    if (this.driveTimes % 1 == 0) {
-                        this.DoSearchSteps();
-                    }
-                    break;
-                default:
-                    this.DoSearchSteps();
-                    break;
-            }
-        };
+        // public SearchCustomSteps(): void {
+        //     switch (this.searchStep) {
+        //         case E_SearchStep.OncePoint:
+        //             if (this.driveTimes % 1 == 0) {
+        //                 this.DoSearchSteps();
+        //             }
+        //             break;
+        //         default:
+        //             this.DoSearchSteps();
+        //             break;
+        //     }
+        // }
         DfsSearch.prototype.DoSearchOneStep = function () {
-            if (!this.isInit || this.isOver || this.isSucc)
+            if (!this.isRunning)
                 return;
             this.AddStep();
             if (this.curPoint == null) {

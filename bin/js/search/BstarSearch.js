@@ -4,7 +4,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    };
+    }
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -18,23 +18,34 @@ var Dylan;
         function BstarSearch() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        Object.defineProperty(BstarSearch.prototype, "isOver", {
-            get: function () {
-                return false;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        BstarSearch.prototype.SearchCustomSteps = function (step) {
-            if (step === void 0) { step = 1; }
-        };
         BstarSearch.prototype.DoSearchOneStep = function () {
+            if (!this.isRunning)
+                return;
+            this.AddStep();
+            this.SetCurPoint(this.frontier.shift());
+            for (var _i = 0, _a = this.mapGraph.GetNeighbors(this.curPoint); _i < _a.length; _i++) {
+                var next = _a[_i];
+                var newCost = this.mapGraph.GetCost(this.curPoint, next);
+                if (!next.cost || newCost < next.cost) {
+                    next.cost = newCost;
+                    next.f = newCost + this.mapGraph.GetHeuristicDis(this.endPoint, next);
+                    this.AddFrontierPoint(next);
+                    if (this.isSucc) {
+                        break;
+                    }
+                }
+            }
         };
-        BstarSearch.prototype.Clear = function () {
-            _super.prototype.Clear.call(this);
+        BstarSearch.prototype.AddFrontierPoint = function (point) {
+            _super.prototype.AddFrontierPoint.call(this, point);
+            var lastPos = this.frontier.indexOf(point);
+            if (lastPos != -1) {
+                this.frontier.splice(lastPos, 1);
+            }
+            this.InsertIncArr(this.frontier, "f", point, 0, lastPos);
         };
         return BstarSearch;
-    }(Dylan.BaseSearch));
+    }(Dylan.DijkstraSearch));
     Dylan.BstarSearch = BstarSearch;
 })(Dylan || (Dylan = {}));
 //# sourceMappingURL=BstarSearch.js.map
