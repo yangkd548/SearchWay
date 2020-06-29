@@ -1,5 +1,5 @@
 module Dylan {
-    export class BfsSearch extends BfsBaseSearch {
+    export class BfsSearch extends BaseBfsSearch {
 
         protected DoSearchOneStep(): void {
             if (!this.isRunning) return;
@@ -15,7 +15,7 @@ module Dylan {
             }
         }
         
-        protected AddFrontierPoint(point: MapPoint): void {
+        public AddFrontierPoint(point: MapPoint): void {
             super.AddFrontierPoint(point);
             this.frontier.push(point);
         }

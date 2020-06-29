@@ -1,5 +1,14 @@
 var Dylan;
 (function (Dylan) {
+    // 上下左右
+    var E_MoveDir;
+    (function (E_MoveDir) {
+        E_MoveDir[E_MoveDir["NONE"] = 0] = "NONE";
+        E_MoveDir[E_MoveDir["UP"] = 1] = "UP";
+        E_MoveDir[E_MoveDir["RIGHT"] = 2] = "RIGHT";
+        E_MoveDir[E_MoveDir["DOWN"] = 3] = "DOWN";
+        E_MoveDir[E_MoveDir["LEFT"] = 4] = "LEFT";
+    })(E_MoveDir = Dylan.E_MoveDir || (Dylan.E_MoveDir = {}));
     var MapGraph = /** @class */ (function () {
         function MapGraph() {
             this.grids = [];
@@ -72,10 +81,11 @@ var Dylan;
         // }
         MapGraph.prototype.GetNeighbors = function (origin, oppoFirst) {
             if (oppoFirst === void 0) { oppoFirst = false; }
-            var relativePosArr = [[origin.x, origin.y - 1], [origin.x + 1, origin.y], [origin.x, origin.y + 1], [origin.x - 1, origin.y]];
+            MapGraph.origin.x = origin.x;
+            MapGraph.origin.y = origin.y;
             var edges = [];
-            for (var i = 0; i < relativePosArr.length; i++) {
-                var pos = relativePosArr[i];
+            for (var i = 0; i < MapGraph.relativePosArr.length; i++) {
+                var pos = MapGraph.relativePosArr[i];
                 var point = this.GetPoint(pos[0], pos[1]);
                 if (!point || point == this.startPoint || point.weight == Infinity) {
                     continue;
@@ -102,6 +112,26 @@ var Dylan;
             if (x >= this.width || y >= this.height)
                 return null;
             return this.grids[x] ? this.grids[x][y] : null;
+        };
+        MapGraph.prototype.GetPointByDir = function (origin, dir) {
+            var posArr;
+            switch (dir) {
+                case E_MoveDir.UP:
+                    posArr = MapGraph.relativePosArr[0];
+                    break;
+                case E_MoveDir.RIGHT:
+                    posArr = MapGraph.relativePosArr[1];
+                    break;
+                case E_MoveDir.DOWN:
+                    posArr = MapGraph.relativePosArr[2];
+                    break;
+                case E_MoveDir.LEFT:
+                    posArr = MapGraph.relativePosArr[3];
+                    break;
+                default:
+                    return null;
+            }
+            return this.GetPoint(posArr[0], posArr[1]);
         };
         MapGraph.prototype.GetCost = function (from, to) {
             return from.cost + to.weight;
@@ -139,6 +169,8 @@ var Dylan;
                 }
             }
         };
+        MapGraph.origin = new Laya.Vector2();
+        MapGraph.relativePosArr = [[MapGraph.origin.x, MapGraph.origin.y - 1], [MapGraph.origin.x + 1, MapGraph.origin.y], [MapGraph.origin.x, MapGraph.origin.y + 1], [MapGraph.origin.x - 1, MapGraph.origin.y]];
         return MapGraph;
     }());
     Dylan.MapGraph = MapGraph;

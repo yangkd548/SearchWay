@@ -1,8 +1,16 @@
 module Dylan {
+    
+    export enum E_ClimbDir{
+        Clockwise = 1,
+        None = 0,
+        CounterClockwise = -1
+    }
 
     export class MapPoint {
         public static readonly PointCostChanged: string = "PointCostChanged";
 
+        //地图MapGraph增加设置当前节点类的接口，就可以根据不同算法，使用不同的节点类了！！！
+        public climbDir:E_ClimbDir = E_ClimbDir.None;
 
         constructor(graph: MapGraph, x: number, y: number) {
             this.SetValue(graph, x, y);
@@ -47,18 +55,11 @@ module Dylan {
                 return true;
             }
         }
-
         public ResetWeight(): void {
             this._weight = this.OriginWeight;
         }
 
-        private _parent: MapPoint;
-        public set parent(parent: MapPoint) {
-            this._parent = parent;
-        }
-        public get parent(): MapPoint {
-            return this._parent;
-        }
+        public parent: MapPoint;
 
         private _preParent: MapPoint;
         public get preParent(): MapPoint {
@@ -71,13 +72,7 @@ module Dylan {
             this._preParent = null;
         }
 
-        private _cost: number;
-        public get cost(): number {
-            return this._cost;
-        }
-        public set cost(value: number) {
-            this._cost = value;
-        }
+        public cost: number;
 
         private _preCost: number;
         public get preCost(): number {
@@ -91,21 +86,12 @@ module Dylan {
         }
 
         //启发式，预期值（预计剩余路程）
-        private _heuristic: number;
-        public get heuristic(): number {
-            return this._heuristic;
-        }
-        public set heuristic(value: number) {
-            this._heuristic = value;
-        }
+        public heuristic: number;
+        public f: number = 0;
 
-        private _f: number;
-        public get f(): number {
-            return this._f;
-        }
-        public set f(value: number) {
-            this._f = value;
-        }
+        public dir:E_MoveDir = E_MoveDir.NONE;
+        public isClimb:boolean = false;
+        public cross: MapPoint;
 
         public GetNextWeight(): number {
             switch (this._weight) {
@@ -157,7 +143,7 @@ module Dylan {
             this.cost = 0;
             this._isProcess = false;
             this._isVisited = false;
-            this._parent = null;
+            this.parent = null;
         }
 
         // private ResetBase(): void {

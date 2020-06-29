@@ -40,7 +40,7 @@ module Dylan {
             }
         }
 
-        protected AddFrontierPoint(point: MapPoint): void {
+        public AddFrontierPoint(point: MapPoint): void {
             super.AddFrontierPoint(point);
             this.SetCurPoint(point);
         }

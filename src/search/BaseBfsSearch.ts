@@ -1,5 +1,5 @@
 module Dylan {
-    export abstract class BfsBaseSearch extends BaseSearch {
+    export abstract class BaseBfsSearch extends BaseSearch {
         protected readonly oppoFirst: boolean = false;
         protected frontier: MapPoint[] = [];
         private fromStartDis: number = 0;

@@ -27,8 +27,6 @@ var Dylan;
                 var next = _a[_i];
                 var newCost = this.mapGraph.GetCost(this.curPoint, next);
                 if (!next.cost || newCost < next.cost) {
-                    next.cost = newCost;
-                    next.f = newCost + this.mapGraph.GetHeuristicDis(this.endPoint, next) * 1.3;
                     this.AddFrontierPoint(next);
                     if (this.isSucc) {
                         break;
@@ -37,10 +35,11 @@ var Dylan;
             }
         };
         AstarSearch.prototype.AddFrontierPoint = function (point) {
-            Dylan.log(1);
-            Dylan.log("---------------------------------------------");
-            Dylan.log(1);
-            _super.prototype.AddFrontierPoint.call(this, point);
+            Dylan.BaseBfsSearch.prototype.AddFrontierPoint.call(this, point);
+            if (this.curPoint) {
+                point.cost = this.mapGraph.GetCost(this.curPoint, point);
+                point.f = point.cost + this.mapGraph.GetHeuristicDis(this.endPoint, point) * 1.3; //1.01即可实现部分走斜线的功效
+            }
             var lastPos = this.frontier.indexOf(point);
             if (lastPos != -1) {
                 this.frontier.splice(lastPos, 1);

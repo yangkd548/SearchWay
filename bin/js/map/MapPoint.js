@@ -1,12 +1,23 @@
 var Dylan;
 (function (Dylan) {
+    var E_ClimbDir;
+    (function (E_ClimbDir) {
+        E_ClimbDir[E_ClimbDir["Clockwise"] = 1] = "Clockwise";
+        E_ClimbDir[E_ClimbDir["None"] = 0] = "None";
+        E_ClimbDir[E_ClimbDir["CounterClockwise"] = -1] = "CounterClockwise";
+    })(E_ClimbDir = Dylan.E_ClimbDir || (Dylan.E_ClimbDir = {}));
     var MapPoint = /** @class */ (function () {
         function MapPoint(graph, x, y) {
+            //地图MapGraph增加设置当前节点类的接口，就可以根据不同算法，使用不同的节点类了！！！
+            this.climbDir = E_ClimbDir.None;
             this._x = -1;
             this._y = -1;
             //权值（权重）
             this.OriginWeight = 1;
             this._weight = this.OriginWeight;
+            this.f = 0;
+            this.dir = Dylan.E_MoveDir.NONE;
+            this.isClimb = false;
             this._isProcess = false;
             // public CanelIsProcess():void{
             //     this.SetIsUnvisited();
@@ -65,16 +76,6 @@ var Dylan;
         MapPoint.prototype.ResetWeight = function () {
             this._weight = this.OriginWeight;
         };
-        Object.defineProperty(MapPoint.prototype, "parent", {
-            get: function () {
-                return this._parent;
-            },
-            set: function (parent) {
-                this._parent = parent;
-            },
-            enumerable: false,
-            configurable: true
-        });
         Object.defineProperty(MapPoint.prototype, "preParent", {
             get: function () {
                 return this._preParent;
@@ -88,16 +89,6 @@ var Dylan;
         MapPoint.prototype.ResetPreParent = function () {
             this._preParent = null;
         };
-        Object.defineProperty(MapPoint.prototype, "cost", {
-            get: function () {
-                return this._cost;
-            },
-            set: function (value) {
-                this._cost = value;
-            },
-            enumerable: false,
-            configurable: true
-        });
         Object.defineProperty(MapPoint.prototype, "preCost", {
             get: function () {
                 return this._preCost;
@@ -111,26 +102,6 @@ var Dylan;
         MapPoint.prototype.ResetPreCost = function () {
             this._preCost = 0;
         };
-        Object.defineProperty(MapPoint.prototype, "heuristic", {
-            get: function () {
-                return this._heuristic;
-            },
-            set: function (value) {
-                this._heuristic = value;
-            },
-            enumerable: false,
-            configurable: true
-        });
-        Object.defineProperty(MapPoint.prototype, "f", {
-            get: function () {
-                return this._f;
-            },
-            set: function (value) {
-                this._f = value;
-            },
-            enumerable: false,
-            configurable: true
-        });
         MapPoint.prototype.GetNextWeight = function () {
             switch (this._weight) {
                 case this.OriginWeight:
@@ -184,7 +155,7 @@ var Dylan;
             this.cost = 0;
             this._isProcess = false;
             this._isVisited = false;
-            this._parent = null;
+            this.parent = null;
         };
         // private ResetBase(): void {
         //     this._x = -1;

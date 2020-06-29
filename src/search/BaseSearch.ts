@@ -189,7 +189,7 @@ module Dylan {
             return false;
         }
 
-        protected AddFrontierPoint(point: MapPoint): void {
+        public AddFrontierPoint(point: MapPoint): void {
             if (point != this.startPoint) {
                 point.parent = this._curPoint;
             }
@@ -197,7 +197,7 @@ module Dylan {
             this.CheckSucc(point);
         }
 
-        private CheckSucc(point: MapPoint): void {
+        protected CheckSucc(point: MapPoint): void {
             if (this._curPreprocessInfo || this._isSucc) return;
             this._isSucc = this.mapGraph.endPoint == point;
         }

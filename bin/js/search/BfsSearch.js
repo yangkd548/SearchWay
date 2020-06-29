@@ -38,7 +38,7 @@ var Dylan;
             this.frontier.push(point);
         };
         return BfsSearch;
-    }(Dylan.BfsBaseSearch));
+    }(Dylan.BaseBfsSearch));
     Dylan.BfsSearch = BfsSearch;
 })(Dylan || (Dylan = {}));
 //# sourceMappingURL=BfsSearch.js.map

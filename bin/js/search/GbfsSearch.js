@@ -26,7 +26,6 @@ var Dylan;
             for (var _i = 0, _a = this.mapGraph.GetNeighbors(this.curPoint); _i < _a.length; _i++) {
                 var next = _a[_i];
                 if (next.parent == null) {
-                    next.heuristic = this.mapGraph.GetHeuristicDis(this.endPoint, next);
                     this.AddFrontierPoint(next);
                     if (this.isSucc) {
                         break;
@@ -35,7 +34,8 @@ var Dylan;
             }
         };
         GbfsSearch.prototype.AddFrontierPoint = function (point) {
-            _super.prototype.AddFrontierPoint.call(this, point);
+            Dylan.BaseBfsSearch.prototype.AddFrontierPoint.call(this, point);
+            point.heuristic = this.mapGraph.GetHeuristicDis(this.endPoint, point);
             var lastPos = this.frontier.indexOf(point);
             if (lastPos != -1) {
                 this.frontier.splice(lastPos, 1);

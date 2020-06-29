@@ -1,4 +1,12 @@
 module Dylan {
+    // 上下左右
+    export enum E_MoveDir {
+        NONE,
+        UP,
+        RIGHT,
+        DOWN,
+        LEFT
+    }
 
     export class MapGraph {
         private _width: number;
@@ -63,10 +71,11 @@ module Dylan {
         // }
 
         public GetNeighbors(origin: MapPoint, oppoFirst: boolean = false): Array<MapPoint> {
-            let relativePosArr = [[origin.x, origin.y - 1], [origin.x + 1, origin.y], [origin.x, origin.y + 1], [origin.x - 1, origin.y]];
+            MapGraph.origin.x = origin.x;
+            MapGraph.origin.y = origin.y;
             let edges: MapPoint[] = [];
-            for (let i = 0; i < relativePosArr.length; i++) {
-                let pos = relativePosArr[i];
+            for (let i = 0; i < MapGraph.relativePosArr.length; i++) {
+                let pos = MapGraph.relativePosArr[i];
                 let point = this.GetPoint(pos[0], pos[1]);
                 if (!point || point == this.startPoint || point.weight == Infinity) {
                     continue;
@@ -93,6 +102,30 @@ module Dylan {
         public GetPoint(x: number, y: number): MapPoint {
             if (x >= this.width || y >= this.height) return null;
             return this.grids[x] ? this.grids[x][y] : null;
+        }
+
+        private static origin = new Laya.Vector2();
+        private static relativePosArr = [[MapGraph.origin.x, MapGraph.origin.y - 1], [MapGraph.origin.x + 1, MapGraph.origin.y], [MapGraph.origin.x, MapGraph.origin.y + 1], [MapGraph.origin.x - 1, MapGraph.origin.y]]
+
+        public GetPointByDir(origin:MapPoint, dir:E_MoveDir):MapPoint {
+            let posArr:number[];
+            switch(dir){
+                case E_MoveDir.UP:
+                    posArr = MapGraph.relativePosArr[0];
+                    break;
+                case E_MoveDir.RIGHT:
+                    posArr = MapGraph.relativePosArr[1];
+                    break;
+                case E_MoveDir.DOWN:
+                    posArr = MapGraph.relativePosArr[2];
+                    break;
+                case E_MoveDir.LEFT:
+                    posArr = MapGraph.relativePosArr[3];
+                    break;
+                default:
+                    return null;
+            }
+            return this.GetPoint(posArr[0], posArr[1]);
         }
 
         public GetCost(from: MapPoint, to: MapPoint): number {

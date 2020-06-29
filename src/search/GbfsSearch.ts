@@ -7,7 +7,6 @@ module Dylan {
             this.SetCurPoint(this.frontier.shift());
             for (let next of this.mapGraph.GetNeighbors(this.curPoint)) {
                 if (next.parent == null) {
-                    next.heuristic = this.mapGraph.GetHeuristicDis(this.endPoint, next);
                     this.AddFrontierPoint(next);
                     if (this.isSucc) {
                         break;
@@ -16,8 +15,9 @@ module Dylan {
             }
         }
 
-        protected AddFrontierPoint(point: MapPoint): void {
-            super.AddFrontierPoint(point);
+        public AddFrontierPoint(point: MapPoint): void {
+            BaseBfsSearch.prototype.AddFrontierPoint.call(this, point);
+            point.heuristic = this.mapGraph.GetHeuristicDis(this.endPoint, point);
             let lastPos = this.frontier.indexOf(point);
             if (lastPos != -1) {
                 this.frontier.splice(lastPos, 1);

@@ -1,5 +1,5 @@
 module Dylan {
-    export class DijkstraSearch extends BfsBaseSearch {
+    export class DijkstraSearch extends BaseBfsSearch {
 
         protected DoSearchOneStep(): void {
             if (!this.isRunning) return;
@@ -17,7 +17,7 @@ module Dylan {
             }
         }
 
-        protected AddFrontierPoint(point: MapPoint): void {
+        public AddFrontierPoint(point: MapPoint): void {
             super.AddFrontierPoint(point);
             let lastPos = this.frontier.indexOf(point);
             if(lastPos != -1){

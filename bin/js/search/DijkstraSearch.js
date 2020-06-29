@@ -89,7 +89,7 @@ var Dylan;
             }
         };
         return DijkstraSearch;
-    }(Dylan.BfsBaseSearch));
+    }(Dylan.BaseBfsSearch));
     Dylan.DijkstraSearch = DijkstraSearch;
 })(Dylan || (Dylan = {}));
 //# sourceMappingURL=DijkstraSearch.js.map
