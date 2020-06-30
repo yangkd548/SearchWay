@@ -15,8 +15,7 @@ module Dylan {
             }
         }
 
-        public AddFrontierPoint(point: MapPoint): void {
-            BaseBfsSearch.prototype.AddFrontierPoint.call(this, point);
+        protected PutPriorityQueue(point: MapPoint):void{
             point.heuristic = this.mapGraph.GetHeuristicDis(this.endPoint, point);
             let lastPos = this.frontier.indexOf(point);
             if (lastPos != -1) {

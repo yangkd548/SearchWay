@@ -25,50 +25,100 @@ var Dylan;
             var curRunPoint = this.frontier.shift();
             this.SetCurPoint(curRunPoint);
             var forward = this.GetForwardPoint(this.curPoint, this.endPoint);
-            // this.CheckSucc(forward);
-            // if(this.isSucc) return;
-            if (forward.weight != Infinity && forward != this.curPoint.parent) {
-                if (!forward.cost) {
-                    //向前走一步
-                    forward.isClimb = false;
-                    this.AddFrontierPoint(forward);
-                }
-                else {
-                    Dylan.log("当前分支，发生合并--------终止查找");
-                    //或者对比cost和newCost，然后，替换父节点？？？
-                }
-            }
-            else {
-                if (this.curPoint.isClimb) {
+            this.CheckSucc(forward);
+            if (this.isSucc)
+                return;
+            if (!this.DealNext(forward)) {
+                //如果当前自有节点的climbDir == 0，表示需要分叉
+                //如果当前自有节点的climbDir == 1 || climbDir == -1，表示需要绕行（回退的！！！）
+                if (this.curPoint.isClimb || this.curPoint.climbDir != Dylan.E_ClimbDir.None) {
                     //继续绕，找到1个点，设为绕爬点(4个方向，找到障碍物的下一个可走节点，weight!=Infinity即可，一定不是forward方向，可以是parent)
-                    for (var i = 1; i <= 4; i++) {
-                        if (curRunPoint.climbDir == 0)
-                            return;
+                    var count = this.frontier.length;
+                    for (var i = 1; i <= 3; i++) {
                         var next = this.GetPointByDir(this.curPoint.dir + curRunPoint.climbDir * i);
-                        if (next && next.weight != Infinity) {
-                            this.AddFrontierPoint(next);
-                            break;
+                        if (next) {
+                            if (this.DealNext(next, this.curPoint.climbDir))
+                                break;
                         }
                     }
                 }
                 else {
                     //分叉走，找到2个点，都设为 绕爬点
+                    //如果当前自有节点的climbDir == 0，表示需要分叉
+                    //如果当前自有节点的climbDir == 1 || climbDir == -1，表示需要绕行（回退的！！！）
                     var wise = this.GetClockwise();
                     var noWise = this.GetCounterClockwise();
+                    if (wise)
+                        this.AddFrontierPoint(wise);
+                    if (noWise)
+                        this.AddFrontierPoint(noWise);
+                    if (!wise || !noWise) {
+                        var climbDir = (wise ? 0 : Dylan.E_ClimbDir.Clockwise) + (noWise ? 0 : Dylan.E_ClimbDir.NoClockwise);
+                        var next = this.curPoint.parent;
+                        this.PushParent(next);
+                    }
                 }
             }
         };
+        BstarSearch.prototype.DealNext = function (next, climbDir) {
+            if (climbDir === void 0) { climbDir = Dylan.E_ClimbDir.None; }
+            if (!this.IsClosed(next) && next.weight != Infinity && next.parent != this.curPoint) {
+                if (!next.cost) {
+                    //向前走一步
+                    next.isClimb = false;
+                    this.AddFrontierPoint(next);
+                }
+                else {
+                    if (this.IsWayPoint(next, this.curPoint)) {
+                        //遇到未关闭的递归父节点，回溯，并让父节点帮忙找
+                        this.PushParent(next);
+                    }
+                    else {
+                        //遇到其他分支节点 递归到分叉点，都设为关闭的
+                        this.CloseBranch();
+                    }
+                }
+                if (!next.isClosed) {
+                    next.climbDir = climbDir;
+                }
+            }
+            else {
+                return false;
+            }
+            return true;
+        };
+        BstarSearch.prototype.PushParent = function (parent) {
+            this.CloseWayPoint(parent, this.curPoint, true);
+            this.AddFrontierPoint(parent); //-----------------------------并让父节点帮忙找????
+        };
+        BstarSearch.prototype.IsClosed = function (point) {
+            if (point.isClosed) {
+                //遇到 已结束的节点，递归到分叉点，都设为关闭的
+                this.CloseBranch();
+            }
+            return point.isClosed;
+        };
+        BstarSearch.prototype.CloseBranch = function () {
+            this.CloseWayPoint(this.curPoint.cross, this.curPoint);
+        };
+        BstarSearch.prototype.CloseWayPoint = function (start, end, ignoreStart) {
+            if (ignoreStart === void 0) { ignoreStart = false; }
+            do {
+                end.SetIsClosed();
+                end = end.parent;
+            } while (end != start);
+            if (!ignoreStart)
+                start.SetIsClosed();
+        };
         BstarSearch.prototype.AddFrontierPoint = function (point) {
-            Dylan.BaseBfsSearch.prototype.AddFrontierPoint.call(this, point);
-            if (this.curPoint) {
-                point.cost = this.mapGraph.GetCost(this.curPoint, point);
-                point.f = point.cost + this.mapGraph.GetHeuristicDis(point, this.endPoint) * 1.01;
+            this.CheckSucc(point);
+            if (this.isSucc)
+                return;
+            if (point != this.startPoint) {
+                point.parent = this.curPoint;
             }
-            var lastPos = this.frontier.indexOf(point);
-            if (lastPos != -1) {
-                this.frontier.splice(lastPos, 1);
-            }
-            this.InsertIncArr(this.frontier, "f", point, 0, lastPos);
+            point.SetIsProcess();
+            this.frontier.push(point);
         };
         // 确定移动时的 方向（上下左右）
         BstarSearch.prototype.GetForwardPoint = function (cur, end) {
@@ -97,12 +147,14 @@ var Dylan;
         };
         BstarSearch.prototype.GetClockwise = function () {
             var point = this.GetPointByDir(this.curPoint.dir + 1);
-            point.climbDir = Dylan.E_ClimbDir.Clockwise;
+            if (point)
+                point.climbDir = Dylan.E_ClimbDir.Clockwise;
             return point;
         };
         BstarSearch.prototype.GetCounterClockwise = function () {
             var point = this.GetPointByDir(this.curPoint.dir - 1);
-            point.climbDir = Dylan.E_ClimbDir.CounterClockwise;
+            if (point)
+                point.climbDir = Dylan.E_ClimbDir.NoClockwise;
             return point;
         };
         BstarSearch.prototype.GetPointByDir = function (dir) {

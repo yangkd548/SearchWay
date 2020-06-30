@@ -29,7 +29,7 @@ module Dylan {
             let hasUnvisited = false;
             let neighbors: MapPoint[] = this.mapGraph.GetNeighbors(this.curPoint, this.oppoFirst);
             for (let next of neighbors) {
-                if (next.isUnvisited) {
+                if (next.isOpened) {
                     hasUnvisited = true;
                     this.AddFrontierPoint(next);
                     break;
@@ -40,13 +40,14 @@ module Dylan {
             }
         }
 
-        public AddFrontierPoint(point: MapPoint): void {
+        protected AddFrontierPoint(point: MapPoint): void {
             super.AddFrontierPoint(point);
+            if(this.isSucc) return;
             this.SetCurPoint(point);
         }
 
         private Recall(): void {
-            this.curPoint.SetIsVisited();
+            this.curPoint.SetIsClosed();
             if (this.curPoint.parent == null) {
                 this._isOver = true;
             }

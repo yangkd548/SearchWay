@@ -17,8 +17,13 @@ module Dylan {
             }
         }
 
-        public AddFrontierPoint(point: MapPoint): void {
+        protected AddFrontierPoint(point: MapPoint): void {
             super.AddFrontierPoint(point);
+            if(this.isSucc) return;
+            this.PutPriorityQueue(point);
+        }
+
+        protected PutPriorityQueue(point: MapPoint):void{
             let lastPos = this.frontier.indexOf(point);
             if(lastPos != -1){
                 this.frontier.splice(lastPos, 1);

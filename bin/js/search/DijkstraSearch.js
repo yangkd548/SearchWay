@@ -37,6 +37,11 @@ var Dylan;
         };
         DijkstraSearch.prototype.AddFrontierPoint = function (point) {
             _super.prototype.AddFrontierPoint.call(this, point);
+            if (this.isSucc)
+                return;
+            this.PutPriorityQueue(point);
+        };
+        DijkstraSearch.prototype.PutPriorityQueue = function (point) {
             var lastPos = this.frontier.indexOf(point);
             if (lastPos != -1) {
                 this.frontier.splice(lastPos, 1);

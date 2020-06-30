@@ -3,7 +3,7 @@ module Dylan {
     export enum E_ClimbDir{
         Clockwise = 1,
         None = 0,
-        CounterClockwise = -1
+        NoClockwise = -1
     }
 
     export class MapPoint {
@@ -113,36 +113,36 @@ module Dylan {
         }
         public SetIsProcess(): void {
             this._isProcess = true;
-            this._isVisited = false;
+            this._isClosed = false;
         }
         // public CanelIsProcess():void{
         //     this.SetIsUnvisited();
         // }
 
-        private _isVisited: boolean = false;
-        public get isVisited(): boolean {
-            return this._isVisited;
+        private _isClosed: boolean = false;
+        public get isClosed(): boolean {
+            return this._isClosed;
         }
-        public SetIsVisited(): void {
-            this._isVisited = true;
+        public SetIsClosed(): void {
+            this._isClosed = true;
             this._isProcess = false;
         }
         // public CanelIsVisited(): void {
         //     this.SetIsProcess();
         // }
 
-        public SetIsUnvisited(): void {
-            this._isProcess = false;
-            this._isVisited = false;
-        }
-        public get isUnvisited(): boolean {
-            return !this._isVisited && !this._isProcess;
+        // public SetIsOpened(): void {
+        //     this._isProcess = false;
+        //     this._isClosed = false;
+        // }
+        public get isOpened(): boolean {
+            return !this._isClosed && !this._isProcess;
         }
 
         public Clear(): void {
             this.cost = 0;
             this._isProcess = false;
-            this._isVisited = false;
+            this._isClosed = false;
             this.parent = null;
         }
 

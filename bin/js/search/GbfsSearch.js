@@ -33,8 +33,7 @@ var Dylan;
                 }
             }
         };
-        GbfsSearch.prototype.AddFrontierPoint = function (point) {
-            Dylan.BaseBfsSearch.prototype.AddFrontierPoint.call(this, point);
+        GbfsSearch.prototype.PutPriorityQueue = function (point) {
             point.heuristic = this.mapGraph.GetHeuristicDis(this.endPoint, point);
             var lastPos = this.frontier.indexOf(point);
             if (lastPos != -1) {

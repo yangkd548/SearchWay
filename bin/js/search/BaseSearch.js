@@ -196,12 +196,15 @@ var Dylan;
                 return false;
             return true;
         };
-        BaseSearch.prototype.IsWayPoint = function (point) {
+        BaseSearch.prototype.IsWayPoint = function (cur, end) {
+            if (end === void 0) { end = null; }
             if (!this.isSucc)
                 return false;
-            var wayPoint = this.endPoint;
-            while (wayPoint.parent && wayPoint != this.startPoint) {
-                if (wayPoint == point) {
+            if (cur == this.startPoint)
+                return true;
+            var wayPoint = end || this.endPoint;
+            while (wayPoint.parent) {
+                if (wayPoint == cur) {
                     return true;
                 }
                 else {
@@ -211,11 +214,13 @@ var Dylan;
             return false;
         };
         BaseSearch.prototype.AddFrontierPoint = function (point) {
+            this.CheckSucc(point);
+            if (this.isSucc)
+                return;
             if (point != this.startPoint) {
                 point.parent = this._curPoint;
             }
             point.SetIsProcess();
-            this.CheckSucc(point);
         };
         BaseSearch.prototype.CheckSucc = function (point) {
             if (this._curPreprocessInfo || this._isSucc)

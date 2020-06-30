@@ -79,7 +79,7 @@ module Dylan {
 
         protected SetCurPoint(value: MapPoint): void {
             super.SetCurPoint(value);
-            this.curPoint.SetIsVisited();
+            this.curPoint.SetIsClosed();
         }
 
         public Clear(): void {

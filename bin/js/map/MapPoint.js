@@ -4,7 +4,7 @@ var Dylan;
     (function (E_ClimbDir) {
         E_ClimbDir[E_ClimbDir["Clockwise"] = 1] = "Clockwise";
         E_ClimbDir[E_ClimbDir["None"] = 0] = "None";
-        E_ClimbDir[E_ClimbDir["CounterClockwise"] = -1] = "CounterClockwise";
+        E_ClimbDir[E_ClimbDir["NoClockwise"] = -1] = "NoClockwise";
     })(E_ClimbDir = Dylan.E_ClimbDir || (Dylan.E_ClimbDir = {}));
     var MapPoint = /** @class */ (function () {
         function MapPoint(graph, x, y) {
@@ -22,7 +22,7 @@ var Dylan;
             // public CanelIsProcess():void{
             //     this.SetIsUnvisited();
             // }
-            this._isVisited = false;
+            this._isClosed = false;
             this.SetValue(graph, x, y);
         }
         Object.defineProperty(MapPoint.prototype, "x", {
@@ -124,29 +124,29 @@ var Dylan;
         });
         MapPoint.prototype.SetIsProcess = function () {
             this._isProcess = true;
-            this._isVisited = false;
+            this._isClosed = false;
         };
-        Object.defineProperty(MapPoint.prototype, "isVisited", {
+        Object.defineProperty(MapPoint.prototype, "isClosed", {
             get: function () {
-                return this._isVisited;
+                return this._isClosed;
             },
             enumerable: false,
             configurable: true
         });
-        MapPoint.prototype.SetIsVisited = function () {
-            this._isVisited = true;
+        MapPoint.prototype.SetIsClosed = function () {
+            this._isClosed = true;
             this._isProcess = false;
         };
-        // public CanelIsVisited(): void {
-        //     this.SetIsProcess();
-        // }
-        MapPoint.prototype.SetIsUnvisited = function () {
-            this._isProcess = false;
-            this._isVisited = false;
-        };
-        Object.defineProperty(MapPoint.prototype, "isUnvisited", {
+        Object.defineProperty(MapPoint.prototype, "isOpened", {
+            // public CanelIsVisited(): void {
+            //     this.SetIsProcess();
+            // }
+            // public SetIsOpened(): void {
+            //     this._isProcess = false;
+            //     this._isClosed = false;
+            // }
             get: function () {
-                return !this._isVisited && !this._isProcess;
+                return !this._isClosed && !this._isProcess;
             },
             enumerable: false,
             configurable: true
@@ -154,7 +154,7 @@ var Dylan;
         MapPoint.prototype.Clear = function () {
             this.cost = 0;
             this._isProcess = false;
-            this._isVisited = false;
+            this._isClosed = false;
             this.parent = null;
         };
         // private ResetBase(): void {

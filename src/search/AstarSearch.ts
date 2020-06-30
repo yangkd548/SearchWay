@@ -16,8 +16,7 @@ module Dylan {
             }
         }
 
-        public AddFrontierPoint(point: MapPoint): void {
-            BaseBfsSearch.prototype.AddFrontierPoint.call(this, point);
+        protected PutPriorityQueue(point: MapPoint):void{
             if (this.curPoint) {
                 point.cost = this.mapGraph.GetCost(this.curPoint, point);
                 point.f = point.cost + this.mapGraph.GetHeuristicDis(this.endPoint, point) * 1.3;//1.01即可实现部分走斜线的功效

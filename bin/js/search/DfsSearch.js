@@ -51,7 +51,7 @@ var Dylan;
             var neighbors = this.mapGraph.GetNeighbors(this.curPoint, this.oppoFirst);
             for (var _i = 0, neighbors_1 = neighbors; _i < neighbors_1.length; _i++) {
                 var next = neighbors_1[_i];
-                if (next.isUnvisited) {
+                if (next.isOpened) {
                     hasUnvisited = true;
                     this.AddFrontierPoint(next);
                     break;
@@ -63,10 +63,12 @@ var Dylan;
         };
         DfsSearch.prototype.AddFrontierPoint = function (point) {
             _super.prototype.AddFrontierPoint.call(this, point);
+            if (this.isSucc)
+                return;
             this.SetCurPoint(point);
         };
         DfsSearch.prototype.Recall = function () {
-            this.curPoint.SetIsVisited();
+            this.curPoint.SetIsClosed();
             if (this.curPoint.parent == null) {
                 this._isOver = true;
             }

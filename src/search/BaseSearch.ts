@@ -175,11 +175,12 @@ module Dylan {
 
         protected abstract DoSearchOneStep(): void;
 
-        public IsWayPoint(point: MapPoint): boolean {
+        public IsWayPoint(cur: MapPoint, end:MapPoint = null): boolean {
             if (!this.isSucc) return false;
-            let wayPoint = this.endPoint;
-            while (wayPoint.parent && wayPoint != this.startPoint) {
-                if (wayPoint == point) {
+            if(cur == this.startPoint) return true;
+            let wayPoint = end || this.endPoint;
+            while (wayPoint.parent) {
+                if (wayPoint == cur) {
                     return true;
                 }
                 else {
@@ -189,12 +190,13 @@ module Dylan {
             return false;
         }
 
-        public AddFrontierPoint(point: MapPoint): void {
+        protected AddFrontierPoint(point: MapPoint): void {
+            this.CheckSucc(point);
+            if(this.isSucc) return;
             if (point != this.startPoint) {
                 point.parent = this._curPoint;
             }
             point.SetIsProcess();
-            this.CheckSucc(point);
         }
 
         protected CheckSucc(point: MapPoint): void {

@@ -6,7 +6,7 @@ module Dylan {
             this.AddStep();
             this.SetCurPoint(this.frontier.shift());
             for (let next of this.mapGraph.GetNeighbors(this.curPoint)) {
-                if (next.isUnvisited) {
+                if (next.isOpened) {
                     this.AddFrontierPoint(next);
                     if (this.isSucc) {
                         break;
@@ -15,8 +15,9 @@ module Dylan {
             }
         }
         
-        public AddFrontierPoint(point: MapPoint): void {
+        protected AddFrontierPoint(point: MapPoint): void {
             super.AddFrontierPoint(point);
+            if(this.isSucc) return;
             this.frontier.push(point);
         }
     }

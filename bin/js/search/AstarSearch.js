@@ -34,8 +34,7 @@ var Dylan;
                 }
             }
         };
-        AstarSearch.prototype.AddFrontierPoint = function (point) {
-            Dylan.BaseBfsSearch.prototype.AddFrontierPoint.call(this, point);
+        AstarSearch.prototype.PutPriorityQueue = function (point) {
             if (this.curPoint) {
                 point.cost = this.mapGraph.GetCost(this.curPoint, point);
                 point.f = point.cost + this.mapGraph.GetHeuristicDis(this.endPoint, point) * 1.3; //1.01即可实现部分走斜线的功效

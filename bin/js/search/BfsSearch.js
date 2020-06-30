@@ -25,7 +25,7 @@ var Dylan;
             this.SetCurPoint(this.frontier.shift());
             for (var _i = 0, _a = this.mapGraph.GetNeighbors(this.curPoint); _i < _a.length; _i++) {
                 var next = _a[_i];
-                if (next.isUnvisited) {
+                if (next.isOpened) {
                     this.AddFrontierPoint(next);
                     if (this.isSucc) {
                         break;
@@ -35,6 +35,8 @@ var Dylan;
         };
         BfsSearch.prototype.AddFrontierPoint = function (point) {
             _super.prototype.AddFrontierPoint.call(this, point);
+            if (this.isSucc)
+                return;
             this.frontier.push(point);
         };
         return BfsSearch;

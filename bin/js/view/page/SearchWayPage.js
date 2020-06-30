@@ -349,7 +349,7 @@ var Dylan;
                     else {
                         switch (point.weight) {
                             case 1:
-                                if (point.isVisited) {
+                                if (point.isClosed) {
                                     curColor = this.GridColorVisited;
                                 }
                                 else {
