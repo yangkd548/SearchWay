@@ -1,14 +1,16 @@
 module Dylan {
     // 上下左右
     export enum E_MoveDir {
-        NONE,
-        UP,
+        NONE = -1,
+        UP = 0,
         RIGHT,
         DOWN,
         LEFT
     }
 
     export class MapGraph {
+        private static readonly relativePosArr = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+
         private _width: number;
         public get width(): number {
             return this._width;
@@ -71,12 +73,10 @@ module Dylan {
         // }
 
         public GetNeighbors(origin: MapPoint, oppoFirst: boolean = false): Array<MapPoint> {
-            MapGraph.origin.x = origin.x;
-            MapGraph.origin.y = origin.y;
             let edges: MapPoint[] = [];
             for (let i = 0; i < MapGraph.relativePosArr.length; i++) {
                 let pos = MapGraph.relativePosArr[i];
-                let point = this.GetPoint(pos[0], pos[1]);
+                let point = this.GetPoint(origin.x + pos[0], origin.y +pos[1]);
                 if (!point || point == this.startPoint || point.weight == Infinity) {
                     continue;
                 }
@@ -104,9 +104,6 @@ module Dylan {
             return this.grids[x] ? this.grids[x][y] : null;
         }
 
-        private static origin = new Laya.Vector2();
-        private static relativePosArr = [[MapGraph.origin.x, MapGraph.origin.y - 1], [MapGraph.origin.x + 1, MapGraph.origin.y], [MapGraph.origin.x, MapGraph.origin.y + 1], [MapGraph.origin.x - 1, MapGraph.origin.y]]
-
         public GetPointByDir(origin:MapPoint, dir:E_MoveDir):MapPoint {
             let posArr:number[];
             switch(dir){
@@ -125,7 +122,7 @@ module Dylan {
                 default:
                     return null;
             }
-            return this.GetPoint(posArr[0], posArr[1]);
+            return this.GetPoint(origin.x + posArr[0], origin.y + posArr[1]);
         }
 
         public GetCost(from: MapPoint, to: MapPoint): number {

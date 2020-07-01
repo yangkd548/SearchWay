@@ -28,7 +28,9 @@ var Dylan;
             this.CheckSucc(forward);
             if (this.isSucc)
                 return;
+            Dylan.log("\n------------------- 开始查找：", this.curPoint.key, forward);
             if (!this.DealNext(forward)) {
+                Dylan.log("------遇到障碍物，", forward);
                 //如果当前自有节点的climbDir == 0，表示需要分叉
                 //如果当前自有节点的climbDir == 1 || climbDir == -1，表示需要绕行（回退的！！！）
                 if (this.curPoint.isClimb || this.curPoint.climbDir != Dylan.E_ClimbDir.None) {
@@ -41,6 +43,9 @@ var Dylan;
                                 break;
                         }
                     }
+                    // if(this.frontier.length > count){
+                    //     log("找到 绕爬 子节点 了", this.frontier[count]);
+                    // }
                 }
                 else {
                     //分叉走，找到2个点，都设为 绕爬点
@@ -49,20 +54,34 @@ var Dylan;
                     var wise = this.GetClockwise();
                     var noWise = this.GetCounterClockwise();
                     if (wise)
-                        this.AddFrontierPoint(wise);
+                        this.AddBranchPoint(wise);
                     if (noWise)
-                        this.AddFrontierPoint(noWise);
+                        this.AddBranchPoint(noWise);
                     if (!wise || !noWise) {
                         var climbDir = (wise ? 0 : Dylan.E_ClimbDir.Clockwise) + (noWise ? 0 : Dylan.E_ClimbDir.NoClockwise);
+                        this.curPoint.SetIsClosed();
                         var next = this.curPoint.parent;
                         this.PushParent(next);
+                        console.log("回退------", next.key);
                     }
                 }
             }
         };
+        BstarSearch.prototype.SetCurPoint = function (value) {
+            this._curPoint = value;
+        };
+        BstarSearch.prototype.AddBranchPoint = function (point) {
+            this.SetBranchCross(point);
+            this.AddFrontierPoint(point);
+        };
+        BstarSearch.prototype.SetBranchCross = function (point) {
+            point.cross = this.curPoint.cross || point;
+        };
         BstarSearch.prototype.DealNext = function (next, climbDir) {
             if (climbDir === void 0) { climbDir = Dylan.E_ClimbDir.None; }
-            if (!this.IsClosed(next) && next.weight != Infinity && next.parent != this.curPoint) {
+            if (this.curPoint.isClimb && climbDir != Dylan.E_ClimbDir.None)
+                return false;
+            if (next != null && !this.IsClosed(next) && next.weight != Infinity && next.parent != this.curPoint) {
                 if (!next.cost) {
                     //向前走一步
                     next.isClimb = false;
@@ -80,6 +99,7 @@ var Dylan;
                 }
                 if (!next.isClosed) {
                     next.climbDir = climbDir;
+                    this.SetBranchCross(next);
                 }
             }
             else {
@@ -114,7 +134,7 @@ var Dylan;
             this.CheckSucc(point);
             if (this.isSucc)
                 return;
-            if (point != this.startPoint) {
+            if (point != this.startPoint && this.curPoint.parent != point) {
                 point.parent = this.curPoint;
             }
             point.SetIsProcess();
@@ -131,15 +151,14 @@ var Dylan;
                 }
                 else {
                     dir = Dylan.E_MoveDir.RIGHT;
-                    this.mapGraph.GetPoint;
                 }
             }
             else {
                 if (cur.y >= end.y) {
-                    dir = Dylan.E_MoveDir.DOWN;
+                    dir = Dylan.E_MoveDir.UP;
                 }
                 else {
-                    dir = Dylan.E_MoveDir.UP;
+                    dir = Dylan.E_MoveDir.DOWN;
                 }
             }
             cur.dir = dir;
@@ -158,7 +177,13 @@ var Dylan;
             return point;
         };
         BstarSearch.prototype.GetPointByDir = function (dir) {
-            return this.mapGraph.GetPointByDir(this.curPoint, dir % 4);
+            var point = this.mapGraph.GetPointByDir(this.curPoint, dir % 4);
+            if (point) {
+                Dylan.log("找到 分叉 或 绕爬：", point.key);
+            }
+            if (!point || point.weight == Infinity || point.isClosed)
+                return null;
+            return point;
         };
         return BstarSearch;
     }(Dylan.DijkstraSearch));

@@ -3,11 +3,11 @@ var Dylan;
     // 上下左右
     var E_MoveDir;
     (function (E_MoveDir) {
-        E_MoveDir[E_MoveDir["NONE"] = 0] = "NONE";
-        E_MoveDir[E_MoveDir["UP"] = 1] = "UP";
-        E_MoveDir[E_MoveDir["RIGHT"] = 2] = "RIGHT";
-        E_MoveDir[E_MoveDir["DOWN"] = 3] = "DOWN";
-        E_MoveDir[E_MoveDir["LEFT"] = 4] = "LEFT";
+        E_MoveDir[E_MoveDir["NONE"] = -1] = "NONE";
+        E_MoveDir[E_MoveDir["UP"] = 0] = "UP";
+        E_MoveDir[E_MoveDir["RIGHT"] = 1] = "RIGHT";
+        E_MoveDir[E_MoveDir["DOWN"] = 2] = "DOWN";
+        E_MoveDir[E_MoveDir["LEFT"] = 3] = "LEFT";
     })(E_MoveDir = Dylan.E_MoveDir || (Dylan.E_MoveDir = {}));
     var MapGraph = /** @class */ (function () {
         function MapGraph() {
@@ -81,12 +81,10 @@ var Dylan;
         // }
         MapGraph.prototype.GetNeighbors = function (origin, oppoFirst) {
             if (oppoFirst === void 0) { oppoFirst = false; }
-            MapGraph.origin.x = origin.x;
-            MapGraph.origin.y = origin.y;
             var edges = [];
             for (var i = 0; i < MapGraph.relativePosArr.length; i++) {
                 var pos = MapGraph.relativePosArr[i];
-                var point = this.GetPoint(pos[0], pos[1]);
+                var point = this.GetPoint(origin.x + pos[0], origin.y + pos[1]);
                 if (!point || point == this.startPoint || point.weight == Infinity) {
                     continue;
                 }
@@ -131,7 +129,7 @@ var Dylan;
                 default:
                     return null;
             }
-            return this.GetPoint(posArr[0], posArr[1]);
+            return this.GetPoint(origin.x + posArr[0], origin.y + posArr[1]);
         };
         MapGraph.prototype.GetCost = function (from, to) {
             return from.cost + to.weight;
@@ -169,8 +167,7 @@ var Dylan;
                 }
             }
         };
-        MapGraph.origin = new Laya.Vector2();
-        MapGraph.relativePosArr = [[MapGraph.origin.x, MapGraph.origin.y - 1], [MapGraph.origin.x + 1, MapGraph.origin.y], [MapGraph.origin.x, MapGraph.origin.y + 1], [MapGraph.origin.x - 1, MapGraph.origin.y]];
+        MapGraph.relativePosArr = [[0, -1], [1, 0], [0, 1], [-1, 0]];
         return MapGraph;
     }());
     Dylan.MapGraph = MapGraph;

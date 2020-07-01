@@ -9,8 +9,9 @@ module Dylan {
             let forward = this.GetForwardPoint(this.curPoint, this.endPoint);
             this.CheckSucc(forward);
             if (this.isSucc) return;
-
+            log("\n------------------- 开始查找：", this.curPoint.key, forward);
             if (!this.DealNext(forward)) {
+                log("------遇到障碍物，", forward);
                 //如果当前自有节点的climbDir == 0，表示需要分叉
                 //如果当前自有节点的climbDir == 1 || climbDir == -1，表示需要绕行（回退的！！！）
                 if (this.curPoint.isClimb || this.curPoint.climbDir != E_ClimbDir.None) {
@@ -22,6 +23,9 @@ module Dylan {
                             if (this.DealNext(next, this.curPoint.climbDir)) break;
                         }
                     }
+                    // if(this.frontier.length > count){
+                    //     log("找到 绕爬 子节点 了", this.frontier[count]);
+                    // }
                 }
                 else {
                     //分叉走，找到2个点，都设为 绕爬点
@@ -29,19 +33,35 @@ module Dylan {
                     //如果当前自有节点的climbDir == 1 || climbDir == -1，表示需要绕行（回退的！！！）
                     let wise = this.GetClockwise();
                     let noWise = this.GetCounterClockwise();
-                    if (wise) this.AddFrontierPoint(wise);
-                    if (noWise) this.AddFrontierPoint(noWise);
-                    if(!wise || !noWise){
-                        let climbDir:E_ClimbDir = (wise?0:E_ClimbDir.Clockwise) + (noWise?0:E_ClimbDir.NoClockwise);
+                    if (wise) this.AddBranchPoint(wise);
+                    if (noWise) this.AddBranchPoint(noWise);
+                    if (!wise || !noWise) {
+                        let climbDir: E_ClimbDir = (wise ? 0 : E_ClimbDir.Clockwise) + (noWise ? 0 : E_ClimbDir.NoClockwise);
+                        this.curPoint.SetIsClosed();
                         let next = this.curPoint.parent;
                         this.PushParent(next);
+                        console.log("回退------", next.key);
                     }
                 }
             }
         }
 
+        protected SetCurPoint(value: MapPoint): void {
+            this._curPoint = value;
+        }
+
+        private AddBranchPoint(point: MapPoint): void {
+            this.SetBranchCross(point);
+            this.AddFrontierPoint(point);
+        }
+
+        private SetBranchCross(point: MapPoint): void {
+            point.cross = this.curPoint.cross || point;
+        }
+
         private DealNext(next: MapPoint, climbDir: E_ClimbDir = E_ClimbDir.None): boolean {
-            if (!this.IsClosed(next) && next.weight != Infinity && next.parent != this.curPoint) {
+            if (this.curPoint.isClimb && climbDir != E_ClimbDir.None) return false;
+            if (next != null && !this.IsClosed(next) && next.weight != Infinity && next.parent != this.curPoint) {
                 if (!next.cost) {
                     //向前走一步
                     next.isClimb = false;
@@ -59,6 +79,7 @@ module Dylan {
                 }
                 if (!next.isClosed) {
                     next.climbDir = climbDir;
+                    this.SetBranchCross(next);
                 }
             }
             else {
@@ -67,7 +88,7 @@ module Dylan {
             return true;
         }
 
-        private PushParent(parent:MapPoint):void{
+        private PushParent(parent: MapPoint): void {
             this.CloseWayPoint(parent, this.curPoint, true);
             this.AddFrontierPoint(parent);//-----------------------------并让父节点帮忙找????
         }
@@ -96,7 +117,7 @@ module Dylan {
         protected AddFrontierPoint(point: MapPoint): void {
             this.CheckSucc(point);
             if (this.isSucc) return;
-            if (point != this.startPoint) {
+            if (point != this.startPoint && this.curPoint.parent != point) {
                 point.parent = this.curPoint;
             }
             point.SetIsProcess();
@@ -113,13 +134,12 @@ module Dylan {
                     dir = E_MoveDir.LEFT;
                 } else {
                     dir = E_MoveDir.RIGHT;
-                    this.mapGraph.GetPoint
                 }
             } else {
                 if (cur.y >= end.y) {
-                    dir = E_MoveDir.DOWN;
-                } else {
                     dir = E_MoveDir.UP;
+                } else {
+                    dir = E_MoveDir.DOWN;
                 }
             }
             cur.dir = dir;
@@ -139,7 +159,12 @@ module Dylan {
         }
 
         private GetPointByDir(dir: E_MoveDir): MapPoint {
-            return this.mapGraph.GetPointByDir(this.curPoint, dir % 4);
+            let point = this.mapGraph.GetPointByDir(this.curPoint, dir % 4);
+            if(point){
+                log("找到 分叉 或 绕爬：",point.key);
+            }
+            if (!point || point.weight == Infinity || point.isClosed) return null;
+            return point;
         }
 
     }

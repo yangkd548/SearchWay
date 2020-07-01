@@ -100,8 +100,8 @@ module Dylan {
 			//默认显示
 			this.functionTab.selectedIndex = 2;
 			//由此页面，设置搜索配置（如果多个页面的话，还是得MapSearch类提供获取当前配置的public接口）
-			this.driveCombo.selectedIndex = E_DriveMode.Auto;
-			this.searchCombo.selectedIndex = E_SearchType.Astar;
+			this.driveCombo.selectedIndex = E_DriveMode.Click;
+			this.searchCombo.selectedIndex = E_SearchType.Bstar;
 
 			this.startBtn.text.text = "开始";
 			this.startBtn.disabled = true;

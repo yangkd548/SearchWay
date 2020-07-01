@@ -69,7 +69,7 @@ module Dylan {
             this.EmitReDraw();
         }
 
-        private _curPoint: MapPoint;
+        protected _curPoint: MapPoint;
         protected SetCurPoint(value: MapPoint): void {
             this._curPoint = value;
         }
