@@ -215,17 +215,23 @@ var Dylan;
         };
         BaseSearch.prototype.AddFrontierPoint = function (point) {
             this.CheckSucc(point);
+            this.SetPointParent(point);
             if (this.isSucc)
                 return;
+            point.SetIsProcess();
+        };
+        BaseSearch.prototype.SetPointParent = function (point) {
             if (point != this.startPoint) {
                 point.parent = this._curPoint;
             }
-            point.SetIsProcess();
         };
         BaseSearch.prototype.CheckSucc = function (point) {
             if (this._curPreprocessInfo || this._isSucc)
                 return;
             this._isSucc = this.mapGraph.endPoint == point;
+            if (this._isSucc) {
+                this.SetPointParent(point);
+            }
         };
         BaseSearch.prototype.SetPointWeight = function (x, y, weight) {
             var point = this.mapGraph.GetPoint(x, y);

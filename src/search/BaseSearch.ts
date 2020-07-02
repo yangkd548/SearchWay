@@ -192,16 +192,23 @@ module Dylan {
 
         protected AddFrontierPoint(point: MapPoint): void {
             this.CheckSucc(point);
+            this.SetPointParent(point);
             if(this.isSucc) return;
+            point.SetIsProcess();
+        }
+
+        protected SetPointParent(point:MapPoint):void{
             if (point != this.startPoint) {
                 point.parent = this._curPoint;
             }
-            point.SetIsProcess();
         }
 
         protected CheckSucc(point: MapPoint): void {
             if (this._curPreprocessInfo || this._isSucc) return;
             this._isSucc = this.mapGraph.endPoint == point;
+            if(this._isSucc){
+                this.SetPointParent(point);
+            }
         }
 
         public SetPointWeight(x: number, y: number, weight: number) {

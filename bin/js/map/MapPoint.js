@@ -8,16 +8,15 @@ var Dylan;
     })(E_ClimbDir = Dylan.E_ClimbDir || (Dylan.E_ClimbDir = {}));
     var MapPoint = /** @class */ (function () {
         function MapPoint(graph, x, y) {
-            //地图MapGraph增加设置当前节点类的接口，就可以根据不同算法，使用不同的节点类了！！！
-            this.climbDir = E_ClimbDir.None;
+            this._climbDir = E_ClimbDir.None;
             this._x = -1;
             this._y = -1;
             //权值（权重）
             this.OriginWeight = 1;
             this._weight = this.OriginWeight;
             this.f = 0;
-            this.dir = Dylan.E_MoveDir.NONE;
-            this.isClimb = false;
+            this.forward = Dylan.E_MoveDir.NONE;
+            this._isClimb = false;
             this._isProcess = false;
             // public CanelIsProcess():void{
             //     this.SetIsUnvisited();
@@ -25,6 +24,19 @@ var Dylan;
             this._isClosed = false;
             this.SetValue(graph, x, y);
         }
+        Object.defineProperty(MapPoint.prototype, "climbDir", {
+            get: function () {
+                return this._climbDir;
+            },
+            set: function (value) {
+                this._climbDir = value;
+                if (value != E_ClimbDir.None) {
+                    this.isClimb = true; //等于None的时候，也可能是绕爬点
+                }
+            },
+            enumerable: false,
+            configurable: true
+        });
         Object.defineProperty(MapPoint.prototype, "x", {
             get: function () {
                 return this._x;
@@ -102,6 +114,19 @@ var Dylan;
         MapPoint.prototype.ResetPreCost = function () {
             this._preCost = 0;
         };
+        Object.defineProperty(MapPoint.prototype, "isClimb", {
+            get: function () {
+                return this._isClimb;
+            },
+            set: function (value) {
+                this._isClimb = value;
+                if (!value) {
+                    this.climbDir = E_ClimbDir.None;
+                }
+            },
+            enumerable: false,
+            configurable: true
+        });
         MapPoint.prototype.GetNextWeight = function () {
             switch (this._weight) {
                 case this.OriginWeight:

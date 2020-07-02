@@ -9,8 +9,16 @@ module Dylan {
     export class MapPoint {
         public static readonly PointCostChanged: string = "PointCostChanged";
 
-        //地图MapGraph增加设置当前节点类的接口，就可以根据不同算法，使用不同的节点类了！！！
-        public climbDir:E_ClimbDir = E_ClimbDir.None;
+        private _climbDir:E_ClimbDir = E_ClimbDir.None;
+        public get climbDir():E_ClimbDir{
+            return this._climbDir;
+        }
+        public set climbDir(value:E_ClimbDir){
+            this._climbDir = value;
+            if(value != E_ClimbDir.None){
+                this.isClimb = true;//等于None的时候，也可能是绕爬点
+            }
+        }
 
         constructor(graph: MapGraph, x: number, y: number) {
             this.SetValue(graph, x, y);
@@ -89,9 +97,19 @@ module Dylan {
         public heuristic: number;
         public f: number = 0;
 
-        public dir:E_MoveDir = E_MoveDir.NONE;
-        public isClimb:boolean = false;
+        public forward:E_MoveDir = E_MoveDir.NONE;
         public cross: MapPoint;
+        
+        private _isClimb:boolean = false;
+        public get isClimb():boolean{
+            return this._isClimb;
+        }
+        public set isClimb(value:boolean){
+            this._isClimb = value;
+            if(!value){
+                this.climbDir = E_ClimbDir.None;
+            }
+        }
 
         public GetNextWeight(): number {
             switch (this._weight) {
