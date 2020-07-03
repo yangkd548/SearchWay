@@ -176,10 +176,9 @@ module Dylan {
         protected abstract DoSearchOneStep(): void;
 
         public IsWayPoint(cur: MapPoint, end:MapPoint = null): boolean {
-            if (!this.isSucc) return false;
             if(cur == this.startPoint) return true;
             let wayPoint = end || this.endPoint;
-            while (wayPoint.parent) {
+            while (wayPoint && wayPoint.parent) {
                 if (wayPoint == cur) {
                     return true;
                 }

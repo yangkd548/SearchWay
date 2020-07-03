@@ -1,6 +1,6 @@
 module Dylan {
 
-    export enum E_ClimbDir {
+    export enum E_ClimbRotation {
         Clockwise = 1,
         None = 0,
         NoClockwise = -1
@@ -9,13 +9,13 @@ module Dylan {
     export class MapPoint {
         public static readonly PointCostChanged: string = "PointCostChanged";
 
-        private _climbDir: E_ClimbDir = E_ClimbDir.None;
-        public get climbDir(): E_ClimbDir {
-            return this._climbDir;
+        private _climbRot: E_ClimbRotation = E_ClimbRotation.None;
+        public get climbRot(): E_ClimbRotation {
+            return this._climbRot;
         }
-        public set climbDir(value: E_ClimbDir) {
-            this._climbDir = value;
-            if (value != E_ClimbDir.None) {
+        public set climbRot(value: E_ClimbRotation) {
+            this._climbRot = value;
+            if (value != E_ClimbRotation.None) {
                 this.isClimb = true;//等于None的时候，也可能是绕爬点
             }
         }
@@ -94,11 +94,11 @@ module Dylan {
         }
 
         //启发式，预期值（预计剩余路程）
-        public heuristic: number;
+        public heuristic: number = 0;
         public f: number = 0;
 
         public forward: E_MoveDir = E_MoveDir.NONE;
-        public cross: MapPoint;
+        public root: MapPoint;
 
         private _isClimb: boolean = false;
         public get isClimb(): boolean {
@@ -107,7 +107,7 @@ module Dylan {
         public set isClimb(value: boolean) {
             this._isClimb = value;
             if (!value) {
-                this.climbDir = E_ClimbDir.None;
+                this.climbRot = E_ClimbRotation.None;
             }
         }
 
@@ -158,10 +158,25 @@ module Dylan {
         }
 
         public Clear(): void {
-            this.cost = 0;
             this._isProcess = false;
             this._isClosed = false;
             this.parent = null;
+            this.cost = 0;
+            this.isClimb = false;
+            this.forward = null;
+            this.root = null;
+            this.heuristic = 0;
+            this.f = 0;
+
+            //不用在这里重置的变量
+            /**
+             * this._x
+             * this._y
+             * this._id
+             * this._preCost
+             * this._preParent
+             * this._weight
+             */
         }
 
         // private ResetBase(): void {

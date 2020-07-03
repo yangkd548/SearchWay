@@ -33,14 +33,14 @@ var Dylan;
             get: function () {
                 return this._isPause;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(MapSearch.prototype, "curSearch", {
             get: function () {
                 return this._curSearch;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         MapSearch.prototype.SetSearchType = function (type) {
@@ -75,14 +75,14 @@ var Dylan;
             get: function () {
                 return this._curSearch.isInit;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(MapSearch.prototype, "isRunning", {
             get: function () {
                 return this._curSearch.isRunning;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         MapSearch.prototype.SetMap = function (width, height) {

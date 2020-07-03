@@ -1,19 +1,21 @@
 var Dylan;
 (function (Dylan) {
-    var E_ClimbDir;
-    (function (E_ClimbDir) {
-        E_ClimbDir[E_ClimbDir["Clockwise"] = 1] = "Clockwise";
-        E_ClimbDir[E_ClimbDir["None"] = 0] = "None";
-        E_ClimbDir[E_ClimbDir["NoClockwise"] = -1] = "NoClockwise";
-    })(E_ClimbDir = Dylan.E_ClimbDir || (Dylan.E_ClimbDir = {}));
+    var E_ClimbRotation;
+    (function (E_ClimbRotation) {
+        E_ClimbRotation[E_ClimbRotation["Clockwise"] = 1] = "Clockwise";
+        E_ClimbRotation[E_ClimbRotation["None"] = 0] = "None";
+        E_ClimbRotation[E_ClimbRotation["NoClockwise"] = -1] = "NoClockwise";
+    })(E_ClimbRotation = Dylan.E_ClimbRotation || (Dylan.E_ClimbRotation = {}));
     var MapPoint = /** @class */ (function () {
         function MapPoint(graph, x, y) {
-            this._climbDir = E_ClimbDir.None;
+            this._climbRot = E_ClimbRotation.None;
             this._x = -1;
             this._y = -1;
             //权值（权重）
             this.OriginWeight = 1;
             this._weight = this.OriginWeight;
+            //启发式，预期值（预计剩余路程）
+            this.heuristic = 0;
             this.f = 0;
             this.forward = Dylan.E_MoveDir.NONE;
             this._isClimb = false;
@@ -24,38 +26,38 @@ var Dylan;
             this._isClosed = false;
             this.SetValue(graph, x, y);
         }
-        Object.defineProperty(MapPoint.prototype, "climbDir", {
+        Object.defineProperty(MapPoint.prototype, "climbRot", {
             get: function () {
-                return this._climbDir;
+                return this._climbRot;
             },
             set: function (value) {
-                this._climbDir = value;
-                if (value != E_ClimbDir.None) {
+                this._climbRot = value;
+                if (value != E_ClimbRotation.None) {
                     this.isClimb = true; //等于None的时候，也可能是绕爬点
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(MapPoint.prototype, "x", {
             get: function () {
                 return this._x;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(MapPoint.prototype, "y", {
             get: function () {
                 return this._y;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(MapPoint.prototype, "id", {
             get: function () {
                 return this._id;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         MapPoint.prototype.SetValue = function (graph, x, y) {
@@ -69,14 +71,14 @@ var Dylan;
             get: function () {
                 return this._x + "_" + this._y;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(MapPoint.prototype, "weight", {
             get: function () {
                 return this._weight;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         MapPoint.prototype.SetWeight = function (weight) {
@@ -92,7 +94,7 @@ var Dylan;
             get: function () {
                 return this._preParent;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         MapPoint.prototype.SetPreParent = function () {
@@ -105,7 +107,7 @@ var Dylan;
             get: function () {
                 return this._preCost;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         MapPoint.prototype.SetPreCost = function () {
@@ -121,10 +123,10 @@ var Dylan;
             set: function (value) {
                 this._isClimb = value;
                 if (!value) {
-                    this.climbDir = E_ClimbDir.None;
+                    this.climbRot = E_ClimbRotation.None;
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         MapPoint.prototype.GetNextWeight = function () {
@@ -144,7 +146,7 @@ var Dylan;
             get: function () {
                 return this._isProcess;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         MapPoint.prototype.SetIsProcess = function () {
@@ -155,7 +157,7 @@ var Dylan;
             get: function () {
                 return this._isClosed;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         MapPoint.prototype.SetIsClosed = function () {
@@ -173,14 +175,28 @@ var Dylan;
             get: function () {
                 return !this._isClosed && !this._isProcess;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         MapPoint.prototype.Clear = function () {
-            this.cost = 0;
             this._isProcess = false;
             this._isClosed = false;
             this.parent = null;
+            this.cost = 0;
+            this.isClimb = false;
+            this.forward = null;
+            this.root = null;
+            this.heuristic = 0;
+            this.f = 0;
+            //不用在这里重置的变量
+            /**
+             * this._x
+             * this._y
+             * this._id
+             * this._preCost
+             * this._preParent
+             * this._weight
+             */
         };
         // private ResetBase(): void {
         //     this._x = -1;

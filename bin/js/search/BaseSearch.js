@@ -24,7 +24,7 @@ var Dylan;
             get: function () {
                 return BaseSearch._mapGraph;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         BaseSearch.prototype.EmitReDraw = function () {
@@ -47,7 +47,7 @@ var Dylan;
                     this.mapGraph.ResetPreCost();
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         //尝试 不考虑终点，遍历地图
@@ -66,7 +66,7 @@ var Dylan;
             get: function () {
                 return this.mapGraph.startPoint;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         BaseSearch.prototype.SetStart = function (fromX, fromY) {
@@ -78,7 +78,7 @@ var Dylan;
             get: function () {
                 return this.mapGraph.endPoint;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         BaseSearch.prototype.SetEndPoint = function (toX, toY) {
@@ -92,42 +92,42 @@ var Dylan;
             get: function () {
                 return this._curPoint;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseSearch.prototype, "isStarted", {
             get: function () {
                 return this._isStarted;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseSearch.prototype, "isRunning", {
             get: function () {
                 return this._isStarted && !this.isOver && !this.isSucc;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseSearch.prototype, "isSucc", {
             get: function () {
                 return this._isSucc;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseSearch.prototype, "isInit", {
             get: function () {
                 return this.mapGraph.startPoint != null;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         Object.defineProperty(BaseSearch.prototype, "step", {
             get: function () {
                 return this._step;
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         BaseSearch.prototype.AddStep = function () {
@@ -164,7 +164,7 @@ var Dylan;
                     this.Clear();
                 }
             },
-            enumerable: true,
+            enumerable: false,
             configurable: true
         });
         BaseSearch.prototype.Start = function () {
@@ -198,12 +198,10 @@ var Dylan;
         };
         BaseSearch.prototype.IsWayPoint = function (cur, end) {
             if (end === void 0) { end = null; }
-            if (!this.isSucc)
-                return false;
             if (cur == this.startPoint)
                 return true;
             var wayPoint = end || this.endPoint;
-            while (wayPoint.parent) {
+            while (wayPoint && wayPoint.parent) {
                 if (wayPoint == cur) {
                     return true;
                 }
