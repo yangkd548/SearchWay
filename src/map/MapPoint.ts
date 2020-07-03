@@ -1,6 +1,6 @@
 module Dylan {
-    
-    export enum E_ClimbDir{
+
+    export enum E_ClimbDir {
         Clockwise = 1,
         None = 0,
         NoClockwise = -1
@@ -9,13 +9,13 @@ module Dylan {
     export class MapPoint {
         public static readonly PointCostChanged: string = "PointCostChanged";
 
-        private _climbDir:E_ClimbDir = E_ClimbDir.None;
-        public get climbDir():E_ClimbDir{
+        private _climbDir: E_ClimbDir = E_ClimbDir.None;
+        public get climbDir(): E_ClimbDir {
             return this._climbDir;
         }
-        public set climbDir(value:E_ClimbDir){
+        public set climbDir(value: E_ClimbDir) {
             this._climbDir = value;
-            if(value != E_ClimbDir.None){
+            if (value != E_ClimbDir.None) {
                 this.isClimb = true;//等于None的时候，也可能是绕爬点
             }
         }
@@ -97,16 +97,16 @@ module Dylan {
         public heuristic: number;
         public f: number = 0;
 
-        public forward:E_MoveDir = E_MoveDir.NONE;
+        public forward: E_MoveDir = E_MoveDir.NONE;
         public cross: MapPoint;
-        
-        private _isClimb:boolean = false;
-        public get isClimb():boolean{
+
+        private _isClimb: boolean = false;
+        public get isClimb(): boolean {
             return this._isClimb;
         }
-        public set isClimb(value:boolean){
+        public set isClimb(value: boolean) {
             this._isClimb = value;
-            if(!value){
+            if (!value) {
                 this.climbDir = E_ClimbDir.None;
             }
         }

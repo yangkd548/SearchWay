@@ -4,7 +4,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    };
+    }
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -39,7 +39,7 @@ var Dylan;
                         this.AddFrontierPoint(forward);
                     }
                     else {
-                        this.DearHasCostPoint(forward);
+                        this.DealNoOpenPoint(forward);
                     }
                 }
             }
@@ -62,7 +62,7 @@ var Dylan;
             if (!forward) {
                 forward = this.GetPointByDir(this.curPoint.forward);
             }
-            return !(forward != null && forward.weight != Infinity && forward.isClosed);
+            return forward == null || forward.weight == Infinity || forward.isClosed;
         };
         //执行分叉前进
         BstarSearch.prototype.BranchMove = function () {
@@ -109,13 +109,11 @@ var Dylan;
         BstarSearch.prototype.TryClimbMove = function (next) {
             //这里的关闭（this.IsClosed(next)），可能会被GetPointByDir的返回约束，拦截了，考虑一下？？？？？？？？？？？？？？？？
             if (next != null && !this.IsClosed(next) && next.parent != this.curPoint) {
-                if (!next.cost) {
-                    //向前走一步
-                    this.AddFrontierPoint(next);
-                    this.PostClimbPoint(next);
+                if (next.isOpened) {
+                    this.PostClimbMove(next);
                 }
                 else {
-                    this.DearHasCostPoint(next);
+                    this.DealNoOpenPoint(next);
                 }
             }
             else {
@@ -123,21 +121,20 @@ var Dylan;
             }
             return true;
         };
-        BstarSearch.prototype.PostClimbPoint = function (point) {
-            if (!point.isClosed) {
-                var forward = this.GetForwardPoint(this.curPoint, this.endPoint);
-                //如果绕爬点，与Forward点相同，则设为自由点
-                if (point == forward) {
-                    //绕爬点，这时 自由了
-                    point.isClimb = false;
-                }
-                else {
-                    point.climbDir = this.curPoint.climbDir;
-                    this.SetBranchCross(point);
-                }
+        BstarSearch.prototype.PostClimbMove = function (point) {
+            var forward = this.GetForwardPoint(this.curPoint, this.endPoint, true);
+            //如果绕爬点，与Forward点，都可以通行，并且不相同，则分析变为自由节点，还需要记录分支信息
+            if (forward && point != forward) {
+                //绕爬分支，这时 自由了，添加的是一个自由节点
+                point = forward;
             }
+            else {
+                point.climbDir = this.curPoint.climbDir;
+            }
+            this.AddFrontierPoint(point);
+            this.SetBranchCross(point);
         };
-        BstarSearch.prototype.DearHasCostPoint = function (next) {
+        BstarSearch.prototype.DealNoOpenPoint = function (next) {
             if (this.IsWayPoint(next, this.curPoint)) {
                 //遇到未关闭的递归父节点，回溯，并让父节点帮忙找
                 this.PushParent(next);
@@ -184,17 +181,20 @@ var Dylan;
             if (this.isSucc)
                 return;
             point.SetIsProcess();
+            //当前逻辑使用isOpened判断forward节点，cost属性暂时没有使用
+            point.cost = this.mapGraph.GetCost(this.curPoint, point);
             this.frontier.push(point);
         };
-        // 确定移动时的 方向（上下左右）
-        BstarSearch.prototype.GetForwardPoint = function (cur, end) {
+        // 获取（最佳）前进方向的点
+        BstarSearch.prototype.GetForwardPoint = function (cur, end, isMerge) {
+            if (isMerge === void 0) { isMerge = false; }
             cur.forward = this.GetMoveDir(cur, end);
             var point = this.GetPointByDir(cur.forward);
             if (point) {
-                Dylan.log("找到 前进方向：", point.key);
+                Dylan.log(isMerge ? "检查 是否设为 自由节点：\t" : "", cur.key, "找到 前进方向：", point.key);
             }
             else {
-                Dylan.log("前进方向，受阻 ！！！");
+                Dylan.log(isMerge ? "检查 是否设为 自由节点：\t" : "", cur.key, "前进方向，受阻 ！！！");
             }
             return point;
         };

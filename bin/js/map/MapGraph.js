@@ -18,14 +18,14 @@ var Dylan;
             get: function () {
                 return this._width;
             },
-            enumerable: false,
+            enumerable: true,
             configurable: true
         });
         Object.defineProperty(MapGraph.prototype, "height", {
             get: function () {
                 return this._height;
             },
-            enumerable: false,
+            enumerable: true,
             configurable: true
         });
         MapGraph.prototype.SetStartPoint = function (x, y) {
@@ -36,7 +36,7 @@ var Dylan;
             get: function () {
                 return this._startPoint;
             },
-            enumerable: false,
+            enumerable: true,
             configurable: true
         });
         MapGraph.prototype.SetEndPoint = function (x, y) {
@@ -47,7 +47,7 @@ var Dylan;
             get: function () {
                 return this._endPoint;
             },
-            enumerable: false,
+            enumerable: true,
             configurable: true
         });
         MapGraph.prototype.SetMap = function (width, height, formatHandler) {
@@ -132,7 +132,7 @@ var Dylan;
             return this.GetPoint(origin.x + posArr[0], origin.y + posArr[1]);
         };
         MapGraph.prototype.GetCost = function (from, to) {
-            return from.cost + to.weight;
+            return (from ? from.cost : 0) + to.weight;
         };
         //常用的获取预期值的方式：曼哈顿距离
         MapGraph.prototype.GetHeuristicDis = function (point1, point2) {

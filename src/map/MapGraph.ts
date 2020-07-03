@@ -52,7 +52,7 @@ module Dylan {
                 }
                 for (let y = 0; y < height; y++) {
                     let point = this.GetPoint(x, y);
-                    if(!point){
+                    if (!point) {
                         point = this.grids[x][y] = new MapPoint(this, x, y);
                     }
                     if (needReset) {
@@ -76,7 +76,7 @@ module Dylan {
             let edges: MapPoint[] = [];
             for (let i = 0; i < MapGraph.relativePosArr.length; i++) {
                 let pos = MapGraph.relativePosArr[i];
-                let point = this.GetPoint(origin.x + pos[0], origin.y +pos[1]);
+                let point = this.GetPoint(origin.x + pos[0], origin.y + pos[1]);
                 if (!point || point == this.startPoint || point.weight == Infinity) {
                     continue;
                 }
@@ -104,9 +104,9 @@ module Dylan {
             return this.grids[x] ? this.grids[x][y] : null;
         }
 
-        public GetPointByDir(origin:MapPoint, dir:E_MoveDir):MapPoint {
-            let posArr:number[];
-            switch(dir){
+        public GetPointByDir(origin: MapPoint, dir: E_MoveDir): MapPoint {
+            let posArr: number[];
+            switch (dir) {
                 case E_MoveDir.UP:
                     posArr = MapGraph.relativePosArr[0];
                     break;
@@ -126,7 +126,7 @@ module Dylan {
         }
 
         public GetCost(from: MapPoint, to: MapPoint): number {
-            return from.cost + to.weight;
+            return (from ? from.cost : 0) + to.weight;
         }
 
         //常用的获取预期值的方式：曼哈顿距离
@@ -151,7 +151,7 @@ module Dylan {
             }
         }
 
-        public SetPreParent():void{
+        public SetPreParent(): void {
             for (let x = 0; x < this.width; x++) {
                 for (let y = 0; y < this.height; y++) {
                     this.GetPoint(x, y).ResetPreParent();
@@ -159,7 +159,7 @@ module Dylan {
             }
         }
 
-        public ResetAllWeight():void{
+        public ResetAllWeight(): void {
             for (let x = 0; x < this.width; x++) {
                 for (let y = 0; y < this.height; y++) {
                     this.GetPoint(x, y).ResetWeight();

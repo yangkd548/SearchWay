@@ -34,28 +34,28 @@ var Dylan;
                     this.isClimb = true; //等于None的时候，也可能是绕爬点
                 }
             },
-            enumerable: false,
+            enumerable: true,
             configurable: true
         });
         Object.defineProperty(MapPoint.prototype, "x", {
             get: function () {
                 return this._x;
             },
-            enumerable: false,
+            enumerable: true,
             configurable: true
         });
         Object.defineProperty(MapPoint.prototype, "y", {
             get: function () {
                 return this._y;
             },
-            enumerable: false,
+            enumerable: true,
             configurable: true
         });
         Object.defineProperty(MapPoint.prototype, "id", {
             get: function () {
                 return this._id;
             },
-            enumerable: false,
+            enumerable: true,
             configurable: true
         });
         MapPoint.prototype.SetValue = function (graph, x, y) {
@@ -69,14 +69,14 @@ var Dylan;
             get: function () {
                 return this._x + "_" + this._y;
             },
-            enumerable: false,
+            enumerable: true,
             configurable: true
         });
         Object.defineProperty(MapPoint.prototype, "weight", {
             get: function () {
                 return this._weight;
             },
-            enumerable: false,
+            enumerable: true,
             configurable: true
         });
         MapPoint.prototype.SetWeight = function (weight) {
@@ -92,7 +92,7 @@ var Dylan;
             get: function () {
                 return this._preParent;
             },
-            enumerable: false,
+            enumerable: true,
             configurable: true
         });
         MapPoint.prototype.SetPreParent = function () {
@@ -105,7 +105,7 @@ var Dylan;
             get: function () {
                 return this._preCost;
             },
-            enumerable: false,
+            enumerable: true,
             configurable: true
         });
         MapPoint.prototype.SetPreCost = function () {
@@ -124,7 +124,7 @@ var Dylan;
                     this.climbDir = E_ClimbDir.None;
                 }
             },
-            enumerable: false,
+            enumerable: true,
             configurable: true
         });
         MapPoint.prototype.GetNextWeight = function () {
@@ -144,7 +144,7 @@ var Dylan;
             get: function () {
                 return this._isProcess;
             },
-            enumerable: false,
+            enumerable: true,
             configurable: true
         });
         MapPoint.prototype.SetIsProcess = function () {
@@ -155,7 +155,7 @@ var Dylan;
             get: function () {
                 return this._isClosed;
             },
-            enumerable: false,
+            enumerable: true,
             configurable: true
         });
         MapPoint.prototype.SetIsClosed = function () {
@@ -173,7 +173,7 @@ var Dylan;
             get: function () {
                 return !this._isClosed && !this._isProcess;
             },
-            enumerable: false,
+            enumerable: true,
             configurable: true
         });
         MapPoint.prototype.Clear = function () {

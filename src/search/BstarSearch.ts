@@ -11,7 +11,7 @@ module Dylan {
                 //走过的节点（isProcess == true），可以再次选择？？？？？？？？？？？？？？？？？？？？？？？？？？
                 //关闭的节点，不可以再选择！！！
                 //没有走的节点，一定可以！先判断这个！！！！！！！！
-                let forward = this.GetForwardPoint(this.curPoint, this.endPoint);
+                let forward = this.GetForwardPoint();
                 if (this.ForwardIsBlock(forward)) {
                     //遇到障碍
                     this.BranchMove();
@@ -22,7 +22,7 @@ module Dylan {
                         this.AddFrontierPoint(forward);
                     }
                     else {
-                        this.DearHasCostPoint(forward);
+                        this.DealNoOpenPoint(forward);
                     }
                 }
             }
@@ -45,7 +45,7 @@ module Dylan {
             if (!forward) {
                 forward = this.GetPointByDir(this.curPoint.forward);
             }
-            return !(forward != null && forward.weight != Infinity && forward.isClosed);
+            return forward == null || forward.weight == Infinity || forward.isClosed;
         }
 
         //执行分叉前进
@@ -55,8 +55,6 @@ module Dylan {
             //如果当前自有节点的climbDir == 1 || climbDir == -1，表示需要绕行（回退的！！！）
             let wise = this.GetClockwise();
             let noWise = this.GetCounterClockwise();
-            if (wise) this.AddBranchPoint(wise);
-            if (noWise) this.AddBranchPoint(noWise);
             if (!wise || !noWise) {
                 let next = this.curPoint.parent;
                 next.climbDir = (wise ? 0 : E_ClimbDir.Clockwise) + (noWise ? 0 : E_ClimbDir.NoClockwise);
@@ -95,13 +93,11 @@ module Dylan {
         private TryClimbMove(next: MapPoint): boolean {
             //这里的关闭（this.IsClosed(next)），可能会被GetPointByDir的返回约束，拦截了，考虑一下？？？？？？？？？？？？？？？？
             if (next != null && !this.IsClosed(next) && next.parent != this.curPoint) {
-                if (!next.cost) {
-                    //向前走一步
-                    this.AddFrontierPoint(next);
-                    this.PostClimbPoint(next);
+                if (next.isOpened) {
+                    this.PostClimbMove(next);
                 }
                 else {
-                    this.DearHasCostPoint(next);
+                    this.DealNoOpenPoint(next);
                 }
             }
             else {
@@ -110,22 +106,20 @@ module Dylan {
             return true;
         }
 
-        private PostClimbPoint(point: MapPoint): void {
-            if (!point.isClosed) {
-                let forward = this.GetForwardPoint(this.curPoint, this.endPoint);
-                //如果绕爬点，与Forward点相同，则设为自由点
-                if (point == forward) {
-                    //绕爬点，这时 自由了
-                    point.isClimb = false;
-                }
-                else {
-                    point.climbDir = this.curPoint.climbDir;
-                    this.SetBranchCross(point);
-                }
+        private PostClimbMove(point: MapPoint): void {
+            let forward = this.GetForwardPoint(true);
+            //如果绕爬点，与Forward点，都可以通行，并且不相同，则分析变为自由节点，还需要记录分支信息
+            if (forward && point != forward) {
+                //绕爬分支，这时 自由了，添加的是一个自由节点
+                point = forward;
             }
+            else {
+                point.climbDir = this.curPoint.climbDir;
+            }
+            this.AddBranchPoint(point);
         }
 
-        private DearHasCostPoint(next: MapPoint): void {
+        private DealNoOpenPoint(next: MapPoint): void {
             if (this.IsWayPoint(next, this.curPoint)) {
                 //遇到未关闭的递归父节点，回溯，并让父节点帮忙找
                 this.PushParent(next);
@@ -174,18 +168,19 @@ module Dylan {
             }
             if (this.isSucc) return;
             point.SetIsProcess();
+            //当前逻辑使用isOpened判断forward节点，cost属性暂时没有使用
+            point.cost = this.mapGraph.GetCost(this.curPoint, point);
             this.frontier.push(point);
         }
 
-        // 确定移动时的 方向（上下左右）
-        private GetForwardPoint(cur: MapPoint, end: MapPoint): MapPoint {
-            cur.forward = this.GetMoveDir(cur, end);
-            let point = this.GetPointByDir(cur.forward);
-            if (point) {
-                log("找到 前进方向：", point.key);
+        // 获取（最佳）前进方向的点
+        private GetForwardPoint(isMerge: boolean = false): MapPoint {
+            let point = this.GetPointByDir(this.curPoint.forward);
+            if (point && point != this.curPoint.parent) {
+                log(isMerge ? "检查 是否设为 自由节点：\t" : "", this.curPoint.key, "找到 前进方向：", point.key);
             }
             else {
-                log("前进方向，受阻 ！！！");
+                log(isMerge ? "检查 是否设为 自由节点：\t" : "", this.curPoint.key, "前进方向，受阻 ！！！");
             }
             return point;
         }
@@ -214,6 +209,7 @@ module Dylan {
             let point = this.GetPointByDir(this.curPoint.forward + 1);
             if (point) {
                 point.climbDir = E_ClimbDir.Clockwise;
+                this.AddBranchPoint(point);
                 log("找到 顺时针 分叉（+1）：", point.key);
             }
             return point;
@@ -223,6 +219,7 @@ module Dylan {
             let point = this.GetPointByDir(this.curPoint.forward - 1);
             if (point) {
                 point.climbDir = E_ClimbDir.NoClockwise;
+                this.AddBranchPoint(point);
                 log("找到 逆时针 分叉（-1）：", point.key);
             }
             return point;
