@@ -130,6 +130,7 @@ var Dylan;
                     return null;
             }
             return this.GetPoint(origin.x + posArr[0], origin.y + posArr[1]);
+            ;
         };
         MapGraph.prototype.GetCost = function (from, to) {
             return (from ? from.cost : 0) + to.weight;

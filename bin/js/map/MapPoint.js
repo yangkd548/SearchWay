@@ -1,14 +1,16 @@
 var Dylan;
 (function (Dylan) {
-    var E_ClimbRotation;
-    (function (E_ClimbRotation) {
-        E_ClimbRotation[E_ClimbRotation["Clockwise"] = 1] = "Clockwise";
-        E_ClimbRotation[E_ClimbRotation["None"] = 0] = "None";
-        E_ClimbRotation[E_ClimbRotation["NoClockwise"] = -1] = "NoClockwise";
-    })(E_ClimbRotation = Dylan.E_ClimbRotation || (Dylan.E_ClimbRotation = {}));
+    var E_ClimbRot;
+    (function (E_ClimbRot) {
+        E_ClimbRot[E_ClimbRot["Clockwise"] = 1] = "Clockwise";
+        E_ClimbRot[E_ClimbRot["None"] = 0] = "None";
+        E_ClimbRot[E_ClimbRot["NoClockwise"] = -1] = "NoClockwise";
+    })(E_ClimbRot = Dylan.E_ClimbRot || (Dylan.E_ClimbRot = {}));
     var MapPoint = /** @class */ (function () {
         function MapPoint(graph, x, y) {
-            this._climbRot = E_ClimbRotation.None;
+            this.isRollBack = false;
+            this.rollCount = 0;
+            this._climbRot = E_ClimbRot.None;
             this._x = -1;
             this._y = -1;
             //权值（权重）
@@ -17,7 +19,12 @@ var Dylan;
             //启发式，预期值（预计剩余路程）
             this.heuristic = 0;
             this.f = 0;
-            this.forward = Dylan.E_MoveDir.NONE;
+            //当前点的爬行方向，如果比原始方向-1或+1，则为可自由状态
+            //如果可自由状态，再次-1或+1，仍是可自由状态
+            //+1或-1，变为原方向，则关闭
+            this._canFree = false;
+            this._curClimbDir = Dylan.E_MoveDir.NONE;
+            this.forwardDir = Dylan.E_MoveDir.NONE;
             this._isClimb = false;
             this._isProcess = false;
             // public CanelIsProcess():void{
@@ -26,15 +33,18 @@ var Dylan;
             this._isClosed = false;
             this.SetValue(graph, x, y);
         }
+        MapPoint.GetFormatDir = function (dir) {
+            dir = dir % 4;
+            if (dir < 0)
+                dir += 4;
+            return dir;
+        };
         Object.defineProperty(MapPoint.prototype, "climbRot", {
             get: function () {
                 return this._climbRot;
             },
             set: function (value) {
                 this._climbRot = value;
-                if (value != E_ClimbRotation.None) {
-                    this.isClimb = true; //等于None的时候，也可能是绕爬点
-                }
             },
             enumerable: false,
             configurable: true
@@ -116,6 +126,33 @@ var Dylan;
         MapPoint.prototype.ResetPreCost = function () {
             this._preCost = 0;
         };
+        Object.defineProperty(MapPoint.prototype, "canFree", {
+            get: function () {
+                return this._canFree;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(MapPoint.prototype, "curClimbDir", {
+            get: function () {
+                return this._curClimbDir;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        MapPoint.prototype.SetCurClimbDir = function (value) {
+            this._curClimbDir = MapPoint.GetFormatDir(value);
+            if (this.parent.canFree) {
+                if (this.curClimbDir == MapPoint.GetFormatDir(this.branch.curClimbDir + (this.climbRot == E_ClimbRot.Clockwise ? -1 : 1))) {
+                    this._canFree = false;
+                }
+            }
+            else {
+                if (this.curClimbDir == MapPoint.GetFormatDir(this.branch.curClimbDir - (this.climbRot == E_ClimbRot.Clockwise ? -1 : 1))) {
+                    this._canFree = true;
+                }
+            }
+        };
         Object.defineProperty(MapPoint.prototype, "isClimb", {
             get: function () {
                 return this._isClimb;
@@ -123,7 +160,7 @@ var Dylan;
             set: function (value) {
                 this._isClimb = value;
                 if (!value) {
-                    this.climbRot = E_ClimbRotation.None;
+                    this.climbRot = E_ClimbRot.None;
                 }
             },
             enumerable: false,
@@ -184,10 +221,16 @@ var Dylan;
             this.parent = null;
             this.cost = 0;
             this.isClimb = false;
-            this.forward = null;
+            this.forwardDir = null;
             this.root = null;
             this.heuristic = 0;
             this.f = 0;
+            this._climbRot = E_ClimbRot.None;
+            this.isRollBack = false;
+            this.rollCount = 0;
+            this._canFree = false;
+            this._curClimbDir = Dylan.E_MoveDir.NONE;
+            this.branch = null;
             //不用在这里重置的变量
             /**
              * this._x
