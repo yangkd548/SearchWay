@@ -19,10 +19,11 @@ module Dylan {
         }
 
         private DealFreePoint(): void {
+            log("当  -自由节点-  处理 ------------------");
             let forward = this.GetForwardPoint();
             if (this.ForwardIsBlock(forward)) {
                 //遇到障碍
-                this.BranchMove();
+                this.FreeForkMove();
             }
             else if (forward.isOpened) {//等同于cost==0
                 //遇到开放节点
@@ -40,7 +41,7 @@ module Dylan {
             //绕爬点，可以走最佳点，最佳点跟绕爬点，不是一个点，这个最佳点就是自由点了！！！
             if (this.curPoint.climbRot == E_ClimbRot.None) {
                 //遇到障碍
-                this.BranchMove();
+                this.ClimbForkMove();
             }
             else {
                 //执行绕爬
@@ -53,7 +54,7 @@ module Dylan {
         }
 
         //执行分叉前进
-        private BranchMove(): void {
+        private FreeForkMove(): void {
             //分叉走，找到2个点，都设为 绕爬点
             //如果当前自有节点的climbDir == 0，表示需要分叉
             //如果当前自有节点的climbDir == 1 || climbDir == -1，表示需要绕行（回退的！！！）
@@ -67,6 +68,13 @@ module Dylan {
             }
         }
 
+        //2个分支临时合并，再分支的处理
+        private ClimbForkMove():void{
+            //如果空位，已被兄弟分支占用，则设置为ClimbRot = None即可
+            //如果空位，没有被占用，则正常绕行
+
+        }
+
         private RollBackClimb(lastPoint: MapPoint): void {
             let fromDir = this.GetMoveDir(this.curPoint, lastPoint);
             let finded = false;
@@ -75,30 +83,72 @@ module Dylan {
                 let checkDir = fromDir + this.curPoint.climbRot * i;
                 console.log("RollBackClimb 绕爬 寻找------- ： ", i, checkDir);
                 let next = this.GetPointByDir(checkDir);
-                if (next && next.isOpened) {
-                    console.log(`找到 绕行点（${this.curPoint.climbRot}）,待进一步处理：${next.key}`);
-                    this.DoRealClimb(next);
-                    finded = true;
-                    break;
+                if (next) {
+                    if (next.isOpened) {
+                        console.log(`找到 -- 绕行点（${this.curPoint.climbRot}）,待进一步处理：${next.key}`);
+                        this.DoRealClimb(next);
+                        finded = true;
+                        break;
+                    }
+                    else if (next == this.curPoint.parent) {
+                        break;
+                    }
                 }
             }
-            if (!finded && this.curPoint.parent) this.PushParent(this.curPoint.parent);
+            if (!finded) {
+                if (this.curPoint.parent) {
+                    if (!this.curPoint.isClimb && this.curPoint.parent.isClimb) {
+                        log("回退 遇到 分支，终止！-------");
+                    }
+                    else {
+                        this.PushParent(this.curPoint.parent);
+                    }
+                }
+                else{
+                    log("回退 到 起点了！！！！！");
+
+                }
+            }
+        }
+
+        //占线绕爬
+        private PassBrotherPoint(next:MapPoint):void{
+            //如果绕行的点，是兄弟节点的，
+            if(next.isClimb && next.root == this.curPoint.root){
+                let index = this.frontier.indexOf(next);
+                if(index != -1){
+                    let fromDir = this.GetClimbFromPos();
+                    let checkDir = fromDir + this.curPoint.climbRot * 1;
+                    let nextNext = this.GetPointByDir(checkDir);
+                    if(nextNext == this.curPoint){
+                        this.frontier.splice(index, 1);
+                    }
+                    else{
+                        //TODO：需要编辑，2个分支临时合并向前的处理
+                        next.climbRot = E_ClimbRot.None;
+                    }
+                }
+                else{
+                    this.DoRealClimb(next);
+                }
+            }
         }
 
         private TryClimbMove(): void {
             let fromDir = this.GetClimbFromPos();
             let canFree = this.curPoint.canFree;
+            let forward = MapPoint.GetFormatDir(this.curPoint.forwardDir);
             //绕爬点，从父节点开始（不含），按绕爬方向找可以走的点（如果是父节点，则执行，父节点处理）
             for (let i = 1; i <= 4; i++) {
                 let checkDir = fromDir + this.curPoint.climbRot * i;
-                console.log("绕爬 寻找------- ： ", i);
+                console.log("绕爬 寻找------- ： ", i, canFree);
+                if (canFree) canFree = forward != MapPoint.GetFormatDir(checkDir);
                 let next = this.GetPointByDir(checkDir);
                 if (next) {
-                    console.log(`找到 绕行点（${this.curPoint.climbRot}）,待进一步处理：${next.key}`);
-                    this.DoClimbMove(next, canFree);
+                    console.log(`找到 绕行点（${this.curPoint.climbRot}）,待进一步处理：${next.key} ---- : `, canFree);
+                    this.DoClimbMove(next, canFree, checkDir);
                     break;
                 }
-                if (canFree) canFree = MapPoint.GetFormatDir(this.curPoint.forwardDir) == MapPoint.GetFormatDir(checkDir);
             }
         }
 
@@ -110,12 +160,17 @@ module Dylan {
             this.curPoint.forwardDir = this.GetMoveDir(this.curPoint, this.endPoint);
         }
 
-        private AddBranchPoint(point: MapPoint, isNewBranch: boolean = false): void {
+        private AddClimbPoint(point: MapPoint, climbDir: E_MoveDir, isNewBranch: boolean = false): void {
+            point.isClimb = true;
+            this.AddFrontierPoint(point);
+            if (climbDir != E_MoveDir.NONE) {
+                point.SetCurClimbDir(climbDir);
+            }
+            log("新点：", point.key, "  -  是否自由：", point.canFree);
             //设置新分支，必须单独设置root节点
             if (isNewBranch) {
                 this.SetNewBranchRoot(point);
             }
-            this.AddFrontierPoint(point);
         }
 
         private SetNewBranchRoot(point: MapPoint): void {
@@ -124,17 +179,22 @@ module Dylan {
             }
         }
 
-        private InheritBranchRoot(point: MapPoint): void {
+        private SetBranchRoot(point: MapPoint): void {
             if (!point.root) {
-                point.branch = point;
                 if (!this.curPoint) this.SetNewBranchRoot(point);
                 else point.root = this.curPoint.root;
             }
         }
 
-        private DoClimbMove(next: MapPoint, isCanFree: boolean): void {
+        private SetBranchMinorRoot(point: MapPoint): void {
+            if (point.isClimb && !point.branch) {
+                point.branch = this.curPoint.branch || point;
+            }
+        }
+
+        private DoClimbMove(next: MapPoint, canFree: boolean, climbDir: E_MoveDir): void {
             if (next.isOpened) {
-                this.DealClimbOpenedPoint(next, isCanFree);
+                this.DealClimbOpenedPoint(next, canFree, climbDir);
             }
             else {
                 if (next.isClimb) {
@@ -146,32 +206,38 @@ module Dylan {
             }
         }
 
-        private DealClimbOpenedPoint(point: MapPoint, isCanFree: boolean): void {
+        private DealClimbOpenedPoint(point: MapPoint, canFree: boolean, climbDir: E_MoveDir = E_MoveDir.NONE): void {
             // 如果绕爬点，与Forward点，都可以通行，并且不相同，则分析变为自由节点，还需要记录分支信息
-            if (isCanFree) {
+            log("绕行-----111 ：", canFree);
+            if (canFree) {
+                log("绕行-----222 ：", canFree);
                 //此时，绕行节点转变为自由节点处理
                 this.curPoint.isClimb = false;
                 this.DealFreePoint();
-                this.AddBranchPoint(point);
             }
             else {
-                this.DoRealClimb(point);
+                log("绕行-----333 ：", canFree);
+                this.DoRealClimb(point, climbDir);
             }
         }
 
-        private DoRealClimb(point: MapPoint): void {
+        private DoRealClimb(point: MapPoint, climbDir: E_MoveDir = E_MoveDir.NONE): void {
             point.climbRot = this.curPoint.climbRot;
-            point.isClimb = true;
             console.log("普通绕行 ： ", point.key);
-            this.AddBranchPoint(point);
+            this.AddClimbPoint(point, climbDir);
         }
 
         private DealClimbMeetClimb(next: MapPoint): void {
             if (this.curPoint.root == next.root) {
                 if (this.IsWayPoint(next, this.curPoint)) {
-                    console.log("遇到父节点，关闭链路节点，回溯到父节点：", next);
+                    console.log("遇到父节点，关闭链路节点，回溯到父节点：", next.key);
                     //遇到未关闭的递归父节点，回溯，并让父节点帮忙找
-                    this.PushParent(next);
+                    if (next.isClimb) {
+                        this.PushParent(next);
+                    }
+                    else {
+                        this.CloseWayPoint(next);
+                    }
                 }
                 else {
                     //遇到兄弟分支 节点？？？？？？？？？？？？？？？？？？？？？？？？？？？如何实现，可以走兄弟分支的节点。。。。
@@ -188,12 +254,12 @@ module Dylan {
         //的 相关处理
         private DealProcessPoint(next: MapPoint): void {
             if (this.IsWayPoint(next, this.curPoint)) {
-                console.log("遇到父节点，关闭链路节点，回溯到父节点：", next);
+                console.log("遇到父节点，关闭链路节点，回溯到父节点：", next.key);
                 //遇到未关闭的递归父节点，回溯，并让父节点帮忙找
                 this.PushParent(next);
             }
             else {
-                console.log("仅关闭链路节点：", next);
+                console.log("仅关闭链路节点：", next.key);
                 //遇到其他分支节点 递归到自己的分叉点，路径点设为关闭的
                 //其实这里，不添加点，就够了。关闭branch分支的点可以不执行。
                 this.CloseBranch();
@@ -202,12 +268,10 @@ module Dylan {
 
         private PushParent(parent: MapPoint): void {
             let lastPoint = this.curPoint;
-            log("回退 节点：", parent ? parent.key : "null");
-            if (!parent.climbRot) {
-                parent.climbRot = this.curPoint.climbRot;
-            }
+            parent.climbRot = this.curPoint.climbRot;
             parent.isRollBack = true;
             this.CloseWayPoint(parent);
+            log("回退 节点：", parent ? parent.key : "null");
             //单次循环内，递归回退
             this.SetCurPoint(parent);
             this.RollBackClimb(lastPoint);
@@ -221,7 +285,7 @@ module Dylan {
             let start = this.curPoint;
             log("关闭 链路 ------------- ：", start.key, end.key);
             while (start != end) {
-                if (start.isRollBack) {
+                if (start.isRollBack || !start.isClimb) {
                     start.rollCount++;
                     if (start.isClimb) {
                         if (start.rollCount == 1) {
@@ -240,20 +304,18 @@ module Dylan {
         }
 
         protected AddFrontierPoint(point: MapPoint, rollback: boolean = false): void {
-            //关闭的点，不再加入process队列，是否正确？？？？？？？？？？
-            if (point.isClosed) return;
+            // //关闭的点，不再加入process队列，是否正确？？？？？？？？？？
+            // if (point.isClosed) return;
             this.CheckSucc(point);
             if (!rollback && this.curPoint) {// && this.curPoint.parent != point) {
                 this.SetPointParent(point);
             }
-            if (this.isSucc) return;
             point.SetIsProcess();
-            this.InheritBranchRoot(point);
-            if (point.isClimb && !point.branch) {
-                point.branch = this.curPoint.branch;
-            }
+            this.SetBranchRoot(point);
+            this.SetBranchMinorRoot(point);
             //当前逻辑使用isOpened判断forward节点，cost属性暂时没有使用
             point.cost = this.mapGraph.GetCost(this.curPoint, point);
+            if (this.isSucc) return;
             this.frontier.push(point);
         }
 
@@ -290,22 +352,20 @@ module Dylan {
         }
 
         private GetClockwise(): MapPoint {
-            return this.GetRealClimbPoint(E_ClimbRot.Clockwise);
-        }        
-
-        private GetCounterClockwise(): MapPoint {
-            return this.GetRealClimbPoint(E_ClimbRot.NoClockwise);
+            return this.GetBranchPoint(E_ClimbRot.Clockwise);
         }
 
-        private GetRealClimbPoint(climbRot:E_ClimbRot):MapPoint{
-            let climbDir = this.curPoint.forwardDir + (climbRot == E_ClimbRot.Clockwise?1:-1);
+        private GetCounterClockwise(): MapPoint {
+            return this.GetBranchPoint(E_ClimbRot.NoClockwise);
+        }
+
+        private GetBranchPoint(climbRot: E_ClimbRot): MapPoint {
+            let climbDir = this.curPoint.forwardDir + (climbRot == E_ClimbRot.Clockwise ? 1 : -1);
             let point = this.GetPointByDir(climbDir);
             if (point && point.isOpened) {
                 point.climbRot = climbRot;
-                point.isClimb = true;
-                this.AddBranchPoint(point, true);
-                point.SetCurClimbDir(climbDir);
-                log(`找到 ${climbRot == E_ClimbRot.Clockwise?"顺":"逆"}时针 分叉（${climbRot == E_ClimbRot.Clockwise?"+":"-"}1）：${point.key}`);
+                this.AddClimbPoint(point, climbDir, true);
+                log(`-----找到 ${climbRot == E_ClimbRot.Clockwise ? "顺" : "逆"}时针 分叉（${climbRot == E_ClimbRot.Clockwise ? "+" : "-"}1）：${point.key}`);
             }
             return point;
         }

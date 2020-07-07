@@ -35,10 +35,11 @@ var Dylan;
             }
         };
         BstarSearch.prototype.DealFreePoint = function () {
+            Dylan.log("当  -自由节点-  处理 ------------------");
             var forward = this.GetForwardPoint();
             if (this.ForwardIsBlock(forward)) {
                 //遇到障碍
-                this.BranchMove();
+                this.FreeForkMove();
             }
             else if (forward.isOpened) { //等同于cost==0
                 //遇到开放节点
@@ -55,7 +56,7 @@ var Dylan;
             //绕爬点，可以走最佳点，最佳点跟绕爬点，不是一个点，这个最佳点就是自由点了！！！
             if (this.curPoint.climbRot == Dylan.E_ClimbRot.None) {
                 //遇到障碍
-                this.BranchMove();
+                this.ClimbForkMove();
             }
             else {
                 //执行绕爬
@@ -67,7 +68,7 @@ var Dylan;
             return forward == null || forward.weight == Infinity || forward.isClosed;
         };
         //执行分叉前进
-        BstarSearch.prototype.BranchMove = function () {
+        BstarSearch.prototype.FreeForkMove = function () {
             //分叉走，找到2个点，都设为 绕爬点
             //如果当前自有节点的climbDir == 0，表示需要分叉
             //如果当前自有节点的climbDir == 1 || climbDir == -1，表示需要绕行（回退的！！！）
@@ -80,6 +81,11 @@ var Dylan;
                 console.log("回退------", next.key);
             }
         };
+        //2个分支临时合并，再分支的处理
+        BstarSearch.prototype.ClimbForkMove = function () {
+            //如果空位，已被兄弟分支占用，则设置为ClimbRot = None即可
+            //如果空位，没有被占用，则正常绕行
+        };
         BstarSearch.prototype.RollBackClimb = function (lastPoint) {
             var fromDir = this.GetMoveDir(this.curPoint, lastPoint);
             var finded = false;
@@ -88,31 +94,70 @@ var Dylan;
                 var checkDir = fromDir + this.curPoint.climbRot * i;
                 console.log("RollBackClimb 绕爬 寻找------- ： ", i, checkDir);
                 var next = this.GetPointByDir(checkDir);
-                if (next && next.isOpened) {
-                    console.log("\u627E\u5230 \u7ED5\u884C\u70B9\uFF08" + this.curPoint.climbRot + "\uFF09,\u5F85\u8FDB\u4E00\u6B65\u5904\u7406\uFF1A" + next.key);
-                    this.DoRealClimb(next);
-                    finded = true;
-                    break;
+                if (next) {
+                    if (next.isOpened) {
+                        console.log("\u627E\u5230 -- \u7ED5\u884C\u70B9\uFF08" + this.curPoint.climbRot + "\uFF09,\u5F85\u8FDB\u4E00\u6B65\u5904\u7406\uFF1A" + next.key);
+                        this.DoRealClimb(next);
+                        finded = true;
+                        break;
+                    }
+                    else if (next == this.curPoint.parent) {
+                        break;
+                    }
                 }
             }
-            if (!finded && this.curPoint.parent)
-                this.PushParent(this.curPoint.parent);
+            if (!finded) {
+                if (this.curPoint.parent) {
+                    if (!this.curPoint.isClimb && this.curPoint.parent.isClimb) {
+                        Dylan.log("回退 遇到 分支，终止！-------");
+                    }
+                    else {
+                        this.PushParent(this.curPoint.parent);
+                    }
+                }
+                else {
+                    Dylan.log("回退 到 起点了！！！！！");
+                }
+            }
+        };
+        //占线绕爬
+        BstarSearch.prototype.PassBrotherPoint = function (next) {
+            //如果绕行的点，是兄弟节点的，
+            if (next.isClimb && next.root == this.curPoint.root) {
+                var index = this.frontier.indexOf(next);
+                if (index != -1) {
+                    var fromDir = this.GetClimbFromPos();
+                    var checkDir = fromDir + this.curPoint.climbRot * 1;
+                    var nextNext = this.GetPointByDir(checkDir);
+                    if (nextNext == this.curPoint) {
+                        this.frontier.splice(index, 1);
+                    }
+                    else {
+                        //TODO：需要编辑，2个分支临时合并向前的处理
+                        next.climbRot = Dylan.E_ClimbRot.None;
+                    }
+                }
+                else {
+                    this.DoRealClimb(next);
+                }
+            }
         };
         BstarSearch.prototype.TryClimbMove = function () {
             var fromDir = this.GetClimbFromPos();
             var canFree = this.curPoint.canFree;
+            var forward = Dylan.MapPoint.GetFormatDir(this.curPoint.forwardDir);
             //绕爬点，从父节点开始（不含），按绕爬方向找可以走的点（如果是父节点，则执行，父节点处理）
             for (var i = 1; i <= 4; i++) {
                 var checkDir = fromDir + this.curPoint.climbRot * i;
-                console.log("绕爬 寻找------- ： ", i);
+                console.log("绕爬 寻找------- ： ", i, canFree);
+                if (canFree)
+                    canFree = forward != Dylan.MapPoint.GetFormatDir(checkDir);
                 var next = this.GetPointByDir(checkDir);
                 if (next) {
-                    console.log("\u627E\u5230 \u7ED5\u884C\u70B9\uFF08" + this.curPoint.climbRot + "\uFF09,\u5F85\u8FDB\u4E00\u6B65\u5904\u7406\uFF1A" + next.key);
-                    this.DoClimbMove(next, canFree);
+                    console.log("\u627E\u5230 \u7ED5\u884C\u70B9\uFF08" + this.curPoint.climbRot + "\uFF09,\u5F85\u8FDB\u4E00\u6B65\u5904\u7406\uFF1A" + next.key + " ---- : ", canFree);
+                    this.DoClimbMove(next, canFree, checkDir);
                     break;
                 }
-                if (canFree)
-                    canFree = Dylan.MapPoint.GetFormatDir(this.curPoint.forwardDir) == Dylan.MapPoint.GetFormatDir(checkDir);
             }
         };
         BstarSearch.prototype.SetCurPoint = function (value) {
@@ -122,31 +167,40 @@ var Dylan;
             this._curPoint = value;
             this.curPoint.forwardDir = this.GetMoveDir(this.curPoint, this.endPoint);
         };
-        BstarSearch.prototype.AddBranchPoint = function (point, isNewBranch) {
+        BstarSearch.prototype.AddClimbPoint = function (point, climbDir, isNewBranch) {
             if (isNewBranch === void 0) { isNewBranch = false; }
+            point.isClimb = true;
+            this.AddFrontierPoint(point);
+            if (climbDir != Dylan.E_MoveDir.NONE) {
+                point.SetCurClimbDir(climbDir);
+            }
+            Dylan.log("新点：", point.key, "  -  是否自由：", point.canFree);
             //设置新分支，必须单独设置root节点
             if (isNewBranch) {
                 this.SetNewBranchRoot(point);
             }
-            this.AddFrontierPoint(point);
         };
         BstarSearch.prototype.SetNewBranchRoot = function (point) {
             if (!point.root) {
                 point.root = this.curPoint;
             }
         };
-        BstarSearch.prototype.InheritBranchRoot = function (point) {
+        BstarSearch.prototype.SetBranchRoot = function (point) {
             if (!point.root) {
-                point.branch = point;
                 if (!this.curPoint)
                     this.SetNewBranchRoot(point);
                 else
                     point.root = this.curPoint.root;
             }
         };
-        BstarSearch.prototype.DoClimbMove = function (next, isCanFree) {
+        BstarSearch.prototype.SetBranchMinorRoot = function (point) {
+            if (point.isClimb && !point.branch) {
+                point.branch = this.curPoint.branch || point;
+            }
+        };
+        BstarSearch.prototype.DoClimbMove = function (next, canFree, climbDir) {
             if (next.isOpened) {
-                this.DealClimbOpenedPoint(next, isCanFree);
+                this.DealClimbOpenedPoint(next, canFree, climbDir);
             }
             else {
                 if (next.isClimb) {
@@ -157,30 +211,38 @@ var Dylan;
                 }
             }
         };
-        BstarSearch.prototype.DealClimbOpenedPoint = function (point, isCanFree) {
+        BstarSearch.prototype.DealClimbOpenedPoint = function (point, canFree, climbDir) {
+            if (climbDir === void 0) { climbDir = Dylan.E_MoveDir.NONE; }
             // 如果绕爬点，与Forward点，都可以通行，并且不相同，则分析变为自由节点，还需要记录分支信息
-            if (isCanFree) {
+            Dylan.log("绕行-----111 ：", canFree);
+            if (canFree) {
+                Dylan.log("绕行-----222 ：", canFree);
                 //此时，绕行节点转变为自由节点处理
                 this.curPoint.isClimb = false;
                 this.DealFreePoint();
-                this.AddBranchPoint(point);
             }
             else {
-                this.DoRealClimb(point);
+                Dylan.log("绕行-----333 ：", canFree);
+                this.DoRealClimb(point, climbDir);
             }
         };
-        BstarSearch.prototype.DoRealClimb = function (point) {
+        BstarSearch.prototype.DoRealClimb = function (point, climbDir) {
+            if (climbDir === void 0) { climbDir = Dylan.E_MoveDir.NONE; }
             point.climbRot = this.curPoint.climbRot;
-            point.isClimb = true;
             console.log("普通绕行 ： ", point.key);
-            this.AddBranchPoint(point);
+            this.AddClimbPoint(point, climbDir);
         };
         BstarSearch.prototype.DealClimbMeetClimb = function (next) {
             if (this.curPoint.root == next.root) {
                 if (this.IsWayPoint(next, this.curPoint)) {
-                    console.log("遇到父节点，关闭链路节点，回溯到父节点：", next);
+                    console.log("遇到父节点，关闭链路节点，回溯到父节点：", next.key);
                     //遇到未关闭的递归父节点，回溯，并让父节点帮忙找
-                    this.PushParent(next);
+                    if (next.isClimb) {
+                        this.PushParent(next);
+                    }
+                    else {
+                        this.CloseWayPoint(next);
+                    }
                 }
                 else {
                     //遇到兄弟分支 节点？？？？？？？？？？？？？？？？？？？？？？？？？？？如何实现，可以走兄弟分支的节点。。。。
@@ -196,12 +258,12 @@ var Dylan;
         //的 相关处理
         BstarSearch.prototype.DealProcessPoint = function (next) {
             if (this.IsWayPoint(next, this.curPoint)) {
-                console.log("遇到父节点，关闭链路节点，回溯到父节点：", next);
+                console.log("遇到父节点，关闭链路节点，回溯到父节点：", next.key);
                 //遇到未关闭的递归父节点，回溯，并让父节点帮忙找
                 this.PushParent(next);
             }
             else {
-                console.log("仅关闭链路节点：", next);
+                console.log("仅关闭链路节点：", next.key);
                 //遇到其他分支节点 递归到自己的分叉点，路径点设为关闭的
                 //其实这里，不添加点，就够了。关闭branch分支的点可以不执行。
                 this.CloseBranch();
@@ -209,12 +271,10 @@ var Dylan;
         };
         BstarSearch.prototype.PushParent = function (parent) {
             var lastPoint = this.curPoint;
-            Dylan.log("回退 节点：", parent ? parent.key : "null");
-            if (!parent.climbRot) {
-                parent.climbRot = this.curPoint.climbRot;
-            }
+            parent.climbRot = this.curPoint.climbRot;
             parent.isRollBack = true;
             this.CloseWayPoint(parent);
+            Dylan.log("回退 节点：", parent ? parent.key : "null");
             //单次循环内，递归回退
             this.SetCurPoint(parent);
             this.RollBackClimb(lastPoint);
@@ -226,7 +286,7 @@ var Dylan;
             var start = this.curPoint;
             Dylan.log("关闭 链路 ------------- ：", start.key, end.key);
             while (start != end) {
-                if (start.isRollBack) {
+                if (start.isRollBack || !start.isClimb) {
                     start.rollCount++;
                     if (start.isClimb) {
                         if (start.rollCount == 1) {
@@ -246,22 +306,19 @@ var Dylan;
         };
         BstarSearch.prototype.AddFrontierPoint = function (point, rollback) {
             if (rollback === void 0) { rollback = false; }
-            //关闭的点，不再加入process队列，是否正确？？？？？？？？？？
-            if (point.isClosed)
-                return;
+            // //关闭的点，不再加入process队列，是否正确？？？？？？？？？？
+            // if (point.isClosed) return;
             this.CheckSucc(point);
             if (!rollback && this.curPoint) { // && this.curPoint.parent != point) {
                 this.SetPointParent(point);
             }
-            if (this.isSucc)
-                return;
             point.SetIsProcess();
-            this.InheritBranchRoot(point);
-            if (point.isClimb && !point.branch) {
-                point.branch = this.curPoint.branch;
-            }
+            this.SetBranchRoot(point);
+            this.SetBranchMinorRoot(point);
             //当前逻辑使用isOpened判断forward节点，cost属性暂时没有使用
             point.cost = this.mapGraph.GetCost(this.curPoint, point);
+            if (this.isSucc)
+                return;
             this.frontier.push(point);
         };
         // 获取（最佳）前进方向的点
@@ -299,20 +356,18 @@ var Dylan;
             return dir;
         };
         BstarSearch.prototype.GetClockwise = function () {
-            return this.GetRealClimbPoint(Dylan.E_ClimbRot.Clockwise);
+            return this.GetBranchPoint(Dylan.E_ClimbRot.Clockwise);
         };
         BstarSearch.prototype.GetCounterClockwise = function () {
-            return this.GetRealClimbPoint(Dylan.E_ClimbRot.NoClockwise);
+            return this.GetBranchPoint(Dylan.E_ClimbRot.NoClockwise);
         };
-        BstarSearch.prototype.GetRealClimbPoint = function (climbRot) {
+        BstarSearch.prototype.GetBranchPoint = function (climbRot) {
             var climbDir = this.curPoint.forwardDir + (climbRot == Dylan.E_ClimbRot.Clockwise ? 1 : -1);
             var point = this.GetPointByDir(climbDir);
             if (point && point.isOpened) {
                 point.climbRot = climbRot;
-                point.isClimb = true;
-                this.AddBranchPoint(point, true);
-                point.SetCurClimbDir(climbDir);
-                Dylan.log("\u627E\u5230 " + (climbRot == Dylan.E_ClimbRot.Clockwise ? "顺" : "逆") + "\u65F6\u9488 \u5206\u53C9\uFF08" + (climbRot == Dylan.E_ClimbRot.Clockwise ? "+" : "-") + "1\uFF09\uFF1A" + point.key);
+                this.AddClimbPoint(point, climbDir, true);
+                Dylan.log("-----\u627E\u5230 " + (climbRot == Dylan.E_ClimbRot.Clockwise ? "顺" : "逆") + "\u65F6\u9488 \u5206\u53C9\uFF08" + (climbRot == Dylan.E_ClimbRot.Clockwise ? "+" : "-") + "1\uFF09\uFF1A" + point.key);
             }
             return point;
         };

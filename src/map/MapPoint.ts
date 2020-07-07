@@ -7,15 +7,15 @@ module Dylan {
     }
 
     export class MapPoint {
-        public static GetFormatDir(dir:E_MoveDir):E_MoveDir{
+        public static GetFormatDir(dir: E_MoveDir): E_MoveDir {
             dir = dir % 4;
-            if(dir < 0) dir += 4;
+            if (dir < 0) dir += 4;
             return dir;
         }
 
         public static readonly PointCostChanged: string = "PointCostChanged";
 
-        public isRollBack:boolean = false;
+        public isRollBack: boolean = false;
         public rollCount = 0;
 
         private _climbRot: E_ClimbRot = E_ClimbRot.None;
@@ -103,35 +103,34 @@ module Dylan {
         public heuristic: number = 0;
         public f: number = 0;
 
-//当前点的爬行方向，如果比原始方向-1或+1，则为可自由状态
-//如果可自由状态，再次-1或+1，仍是可自由状态
-//+1或-1，变为原方向，则关闭
-        public _canFree:boolean = false;
-        public get canFree():boolean{
+        //当前点的爬行方向，如果比原始方向-1或+1，则为可自由状态
+        //如果可自由状态，再次-1或+1，仍是可自由状态
+        //+1或-1，变为原方向，则关闭
+        public _canFree: boolean = false;
+        public get canFree(): boolean {
             return this._canFree;
         }
 
-        private _curClimbDir:E_MoveDir = E_MoveDir.NONE;
-        public get curClimbDir():E_MoveDir{
+        private _curClimbDir: E_MoveDir = E_MoveDir.NONE;
+        public get curClimbDir(): E_MoveDir {
             return this._curClimbDir;
         }
         public SetCurClimbDir(value: E_MoveDir) {
             this._curClimbDir = MapPoint.GetFormatDir(value);
+            let change = this.climbRot == E_ClimbRot.Clockwise ? -1 : 1;
             if (this.parent.canFree) {
-                if (this.curClimbDir == MapPoint.GetFormatDir(this.branch.curClimbDir + (this.climbRot == E_ClimbRot.Clockwise ? -1 : 1))) {
-                    this._canFree = false;
-                }
+                log("AAA 自由判定 -------- ：", this.curClimbDir, this.branch.key, MapPoint.GetFormatDir(this.branch.curClimbDir - change), "  *********  ", this.branch.curClimbDir, change);                
+                this._canFree = this.curClimbDir != MapPoint.GetFormatDir(this.branch.curClimbDir - change);
             }
             else {
-                if (this.curClimbDir == MapPoint.GetFormatDir(this.branch.curClimbDir - (this.climbRot == E_ClimbRot.Clockwise ? -1 : 1))) {
-                    this._canFree = true;
-                }
+                log("自由判定 -------- ：", this.curClimbDir, this.branch.key, MapPoint.GetFormatDir(this.branch.curClimbDir + change), "  *********  ", this.branch.curClimbDir, change);
+                this._canFree = this.curClimbDir == MapPoint.GetFormatDir(this.branch.curClimbDir + change);
             }
         }
 
         public forwardDir: E_MoveDir = E_MoveDir.NONE;
         public root: MapPoint;
-        public branch:MapPoint;
+        public branch: MapPoint;
 
         private _isClimb: boolean = false;
         public get isClimb(): boolean {
@@ -207,7 +206,7 @@ module Dylan {
             this._canFree = false;
             this._curClimbDir = E_MoveDir.NONE;
             this.branch = null;
-            
+
             //不用在这里重置的变量
             /**
              * this._x

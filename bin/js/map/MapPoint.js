@@ -142,15 +142,14 @@ var Dylan;
         });
         MapPoint.prototype.SetCurClimbDir = function (value) {
             this._curClimbDir = MapPoint.GetFormatDir(value);
+            var change = this.climbRot == E_ClimbRot.Clockwise ? -1 : 1;
             if (this.parent.canFree) {
-                if (this.curClimbDir == MapPoint.GetFormatDir(this.branch.curClimbDir + (this.climbRot == E_ClimbRot.Clockwise ? -1 : 1))) {
-                    this._canFree = false;
-                }
+                Dylan.log("AAA 自由判定 -------- ：", this.curClimbDir, this.branch.key, MapPoint.GetFormatDir(this.branch.curClimbDir - change), "  *********  ", this.branch.curClimbDir, change);
+                this._canFree = this.curClimbDir != MapPoint.GetFormatDir(this.branch.curClimbDir - change);
             }
             else {
-                if (this.curClimbDir == MapPoint.GetFormatDir(this.branch.curClimbDir - (this.climbRot == E_ClimbRot.Clockwise ? -1 : 1))) {
-                    this._canFree = true;
-                }
+                Dylan.log("自由判定 -------- ：", this.curClimbDir, this.branch.key, MapPoint.GetFormatDir(this.branch.curClimbDir + change), "  *********  ", this.branch.curClimbDir, change);
+                this._canFree = this.curClimbDir == MapPoint.GetFormatDir(this.branch.curClimbDir + change);
             }
         };
         Object.defineProperty(MapPoint.prototype, "isClimb", {
