@@ -9,7 +9,7 @@ module Dylan {
     export class MapPoint {
         public static GetFormatDir(dir: E_MoveDir): E_MoveDir {
             dir = dir % 4;
-            if (dir < 0) dir += 4;
+            while (dir < 0) dir += 4;
             return dir;
         }
 
@@ -115,16 +115,16 @@ module Dylan {
         public get curClimbDir(): E_MoveDir {
             return this._curClimbDir;
         }
-        public SetCurClimbDir(value: E_MoveDir) {
+        public SetCurClimbDir(value: E_MoveDir, lastPoint:MapPoint) {
             this._curClimbDir = MapPoint.GetFormatDir(value);
             let change = this.climbRot == E_ClimbRot.Clockwise ? -1 : 1;
-            if (this.parent.canFree) {
-                log("AAA 自由判定 -------- ：", this.curClimbDir, this.branch.key, MapPoint.GetFormatDir(this.branch.curClimbDir - change), "  *********  ", this.branch.curClimbDir, change);                
-                this._canFree = this.curClimbDir != MapPoint.GetFormatDir(this.branch.curClimbDir - change);
+            if (lastPoint.canFree) {
+                log(this.branch.key, this.branch.curClimbDir,"  AAA 自由判定 -------- ：", this.curClimbDir, MapPoint.GetFormatDir(lastPoint.curClimbDir + change));                
+                this._canFree = this.curClimbDir == lastPoint.curClimbDir || this.curClimbDir == MapPoint.GetFormatDir(lastPoint.curClimbDir + change);
             }
             else {
-                log("自由判定 -------- ：", this.curClimbDir, this.branch.key, MapPoint.GetFormatDir(this.branch.curClimbDir + change), "  *********  ", this.branch.curClimbDir, change);
-                this._canFree = this.curClimbDir == MapPoint.GetFormatDir(this.branch.curClimbDir + change);
+                log(this.branch.key, "自由判定 -------- ：", lastPoint.curClimbDir, this.branch.curClimbDir, "  ****  ", this.curClimbDir, MapPoint.GetFormatDir(this.branch.curClimbDir + change));
+                this._canFree = lastPoint.curClimbDir == this.branch.curClimbDir && this.curClimbDir == MapPoint.GetFormatDir(this.branch.curClimbDir + change);
             }
         }
 

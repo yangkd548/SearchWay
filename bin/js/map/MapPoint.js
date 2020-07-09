@@ -35,7 +35,7 @@ var Dylan;
         }
         MapPoint.GetFormatDir = function (dir) {
             dir = dir % 4;
-            if (dir < 0)
+            while (dir < 0)
                 dir += 4;
             return dir;
         };
@@ -140,16 +140,16 @@ var Dylan;
             enumerable: false,
             configurable: true
         });
-        MapPoint.prototype.SetCurClimbDir = function (value) {
+        MapPoint.prototype.SetCurClimbDir = function (value, lastPoint) {
             this._curClimbDir = MapPoint.GetFormatDir(value);
             var change = this.climbRot == E_ClimbRot.Clockwise ? -1 : 1;
-            if (this.parent.canFree) {
-                Dylan.log("AAA 自由判定 -------- ：", this.curClimbDir, this.branch.key, MapPoint.GetFormatDir(this.branch.curClimbDir - change), "  *********  ", this.branch.curClimbDir, change);
-                this._canFree = this.curClimbDir != MapPoint.GetFormatDir(this.branch.curClimbDir - change);
+            if (lastPoint.canFree) {
+                Dylan.log(this.branch.key, this.branch.curClimbDir, "  AAA 自由判定 -------- ：", this.curClimbDir, MapPoint.GetFormatDir(lastPoint.curClimbDir + change));
+                this._canFree = this.curClimbDir == lastPoint.curClimbDir || this.curClimbDir == MapPoint.GetFormatDir(lastPoint.curClimbDir + change);
             }
             else {
-                Dylan.log("自由判定 -------- ：", this.curClimbDir, this.branch.key, MapPoint.GetFormatDir(this.branch.curClimbDir + change), "  *********  ", this.branch.curClimbDir, change);
-                this._canFree = this.curClimbDir == MapPoint.GetFormatDir(this.branch.curClimbDir + change);
+                Dylan.log(this.branch.key, "自由判定 -------- ：", lastPoint.curClimbDir, this.branch.curClimbDir, "  ****  ", this.curClimbDir, MapPoint.GetFormatDir(this.branch.curClimbDir + change));
+                this._canFree = lastPoint.curClimbDir == this.branch.curClimbDir && this.curClimbDir == MapPoint.GetFormatDir(this.branch.curClimbDir + change);
             }
         };
         Object.defineProperty(MapPoint.prototype, "isClimb", {

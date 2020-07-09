@@ -122,7 +122,8 @@ module Dylan {
                 default:
                     return null;
             }
-            return this.GetPoint(origin.x + posArr[0], origin.y + posArr[1]);;
+            log(`找点dir = ${dir}, ${origin.key}, ${posArr}, ${origin.x + posArr[0]}, ${origin.y + posArr[1]}`);
+            return this.GetPoint(origin.x + posArr[0], origin.y + posArr[1]);
         }
 
         public GetCost(from: MapPoint, to: MapPoint): number {

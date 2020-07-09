@@ -129,8 +129,8 @@ var Dylan;
                 default:
                     return null;
             }
+            Dylan.log("\u627E\u70B9dir = " + dir + ", " + origin.key + ", " + posArr + ", " + (origin.x + posArr[0]) + ", " + (origin.y + posArr[1]));
             return this.GetPoint(origin.x + posArr[0], origin.y + posArr[1]);
-            ;
         };
         MapGraph.prototype.GetCost = function (from, to) {
             return (from ? from.cost : 0) + to.weight;
